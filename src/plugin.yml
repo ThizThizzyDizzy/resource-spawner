@@ -1,0 +1,5 @@
+main: com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore
+version: 1.0
+api-version: 1.16
+name: ResourceSpawner
+softdepend: WorldEdit
