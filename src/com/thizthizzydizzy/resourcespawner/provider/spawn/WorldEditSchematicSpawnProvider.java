@@ -18,7 +18,7 @@ public class WorldEditSchematicSpawnProvider extends AbstractStructureSpawnProvi
     }
     @Override
     public Structure load(ResourceSpawnerCore plugin, JsonObject json){
-        String filepath = json.getString("file", "null");
+        String filepath = json.getString("file", null);
         if(filepath==null)throw new IllegalArgumentException("Schematic file must be provided!");
         File file = new File(plugin.getDataFolder(), filepath);
         if(!file.exists())throw new IllegalArgumentException("Could not find schematic file "+filepath+"!");

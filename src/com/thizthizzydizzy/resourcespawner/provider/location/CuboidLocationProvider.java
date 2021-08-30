@@ -22,12 +22,12 @@ public class CuboidLocationProvider implements LocationProvider{
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
-        minX = json.getInt("min_x", Integer.MIN_VALUE);
-        maxX = json.getInt("max_x", Integer.MAX_VALUE);
+        minX = json.get("min_x").asInt();
+        maxX = json.get("max_x").asInt();
         minY = json.getInt("min_y", Integer.MIN_VALUE);
         maxY = json.getInt("max_y", Integer.MAX_VALUE);
-        minZ = json.getInt("min_z", Integer.MIN_VALUE);
-        maxZ = json.getInt("max_z", Integer.MAX_VALUE);
+        minZ = json.get("min_z").asInt();
+        maxZ = json.get("max_z").asInt();
         if(maxX<minX)throw new IllegalArgumentException("max_x must be greater than or equal to min_x!");
         if(maxY<minY)throw new IllegalArgumentException("max_y must be greater than or equal to min_y!");
         if(maxZ<minZ)throw new IllegalArgumentException("max_z must be greater than or equal to min_z!");

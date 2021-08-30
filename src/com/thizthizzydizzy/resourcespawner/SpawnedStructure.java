@@ -1,5 +1,6 @@
 package com.thizthizzydizzy.resourcespawner;
 import com.thizthizzydizzy.resourcespawner.provider.spawn.AbstractStructureSpawnProvider;
+import com.thizthizzydizzy.resourcespawner.trigger.StructureTrigger;
 import com.thizthizzydizzy.resourcespawner.trigger.Trigger;
 import com.thizthizzydizzy.resourcespawner.trigger.TriggerListener;
 import java.util.ArrayList;
@@ -47,6 +48,9 @@ public class SpawnedStructure{
                 }
                 for(Trigger t : triggerListeners.keySet()){
                     t.removeTriggerListener(triggerListeners.get(t));
+                    if(t instanceof StructureTrigger){
+                        ((StructureTrigger)t).dissolve();
+                    }
                 }
                 finished = true;
             }
@@ -104,8 +108,15 @@ public class SpawnedStructure{
             TriggerListener triggerListener = () -> {
                 spawnedStructure.decayTimer = Math.max(spawnedStructure.decayTimer, spawnProviderButEffectivelyFinal.resetTriggers.get(trigger));
             };
-            spawnedStructure.triggerListeners.put(trigger, triggerListener);
-            trigger.addTriggerListener(triggerListener);
+            if(trigger instanceof StructureTrigger){
+                //make a unique instance for this structure
+                StructureTrigger st = ((StructureTrigger)trigger).newInstance(plugin, spawnedStructure);
+                spawnedStructure.triggerListeners.put(st, triggerListener);
+                st.addTriggerListener(triggerListener);
+            }else{
+                spawnedStructure.triggerListeners.put(trigger, triggerListener);
+                trigger.addTriggerListener(triggerListener);
+            }
         }
         return spawnedStructure;
     }

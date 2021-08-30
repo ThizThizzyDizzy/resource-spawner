@@ -238,8 +238,8 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                             }else throw new IllegalArgumentException("Invalid location provider: "+val.getType().getClass().getName());
                         }
                     }
-                    JsonValue spawns = spawner.get("spawns");
-                    if(spawns==null)getLogger().log(Level.WARNING, "Resource spawner {0} does not have any spawns!", name);
+                    JsonValue spawns = spawner.get("spawn_providers");
+                    if(spawns==null)getLogger().log(Level.WARNING, "Resource spawner {0} does not have any spawn providers!", name);
                     else{
                         for(JsonValue val : spawns.asArray()){
                             if(val.isObject()){
@@ -269,7 +269,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                     resourceSpawner.limit = spawner.getInt("limit", resourceSpawner.limit);
                     resourceSpawner.spawnDelay = spawner.getInt("spawn_delay", resourceSpawner.spawnDelay);
                     resourceSpawner.tickInterval = spawner.getInt("tick_interval", resourceSpawner.tickInterval);
-                    resourceSpawner.maxTickTime = spawner.getInt("max_tick_time", resourceSpawner.maxTickTime);
+                    resourceSpawner.maxTickTime = spawner.getLong("max_tick_time", resourceSpawner.maxTickTime);
                     resourceSpawners.add(resourceSpawner);
                 }else throw new IllegalArgumentException("Invalid resource spawner: "+value.getType().getClass().getName());
             }

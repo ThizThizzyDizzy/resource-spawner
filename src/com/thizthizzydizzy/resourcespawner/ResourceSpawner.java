@@ -18,7 +18,7 @@ public class ResourceSpawner{
     public int limit = 1;//defaults to 1 to avoid runaway generation
     public int spawnDelay = 0;
     public int tickInterval = 1;//defaults to ticking every tick for maximum accuracy
-    public int maxTickTime = 5;//defaults to 5 to avoid freezing the server
+    public long maxTickTime = 5_000_000;//defaults to 5 to avoid freezing the server
     //active stuff
     public int spawnTimer = 0;
     public ArrayList<Task<SpawnedStructure>> tasks = new ArrayList<>();
@@ -56,10 +56,10 @@ public class ResourceSpawner{
             public void run(){
                 spawnTimer-=tickInterval;
                 if(spawnTimer<=0){
-                    spawnTimer = spawnDelay;//because it's in seconds
+                    spawnTimer = spawnDelay;
                     if(spawnTask==null){
-                        if(ResourceSpawnerCore.debug)System.out.println("Spawn timer hit; "+(spawnTask==null)+" "+structures.size()+"<"+limit);
-                        if(structures.size()<limit)startSpawn();
+                        if(ResourceSpawnerCore.debug)System.out.println("Spawn timer hit; "+(spawnTask==null)+(limit==-1?"":(" "+structures.size()+"<"+limit)));
+                        if(limit==1||structures.size()<limit)startSpawn();
                     }
                 }
                 for(SpawnedStructure s : structures){
@@ -81,7 +81,7 @@ public class ResourceSpawner{
                             while(!task.isFinished()){
                                 task.step();
                                 long totalNanos = System.nanoTime()-startTime;
-                                if(totalNanos>maxTickTime*1_000_000L)return;
+                                if(totalNanos>maxTickTime)return;
                             }
                             SpawnedStructure s = task.getResult();
                             if(task==spawnTask){

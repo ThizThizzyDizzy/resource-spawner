@@ -23,12 +23,10 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
     public HashMap<Trigger, Integer> resetTriggers = new HashMap<>();
     public StructureSorter sorter;//can be null
     public HashSet<Material> replace;//can be null
-    public int minBuildTime;
     public boolean shouldDecay = false;
     public StructureSorter decaySorter;//can be null
     public int decayDelay;
     public Structure structure;
-    public int minDecayTime;
     public Material decayTo = Material.AIR;
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
@@ -44,7 +42,6 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
                 replace.addAll(Vanillify.getBlocks(val.asString()));
             }
         }
-        minBuildTime = json.getInt("min_build_time", 0);
         JsonValue decay = json.get("decay");
         if(decay!=null){
             JsonObject decayObj = decay.asObject();
@@ -56,7 +53,6 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
             }
             decayDelay = decayObj.getInt("delay", -1);
             if(decayDelay==-1)throw new IllegalArgumentException("Decay delay must be provided!");
-            minDecayTime = decayObj.getInt("min_decay_time", 0);
             JsonValue resetTriggersObj = json.get("reset_triggers");
             if(resetTriggersObj!=null){
                 for(JsonValue value : resetTriggersObj.asArray()){
