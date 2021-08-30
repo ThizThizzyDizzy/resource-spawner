@@ -18,11 +18,13 @@ import com.thizthizzydizzy.resourcespawner.provider.location.CircleLocationProvi
 import com.thizthizzydizzy.resourcespawner.provider.location.CuboidLocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.location.SquareLocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.location.SurfaceLocationProvider;
+import com.thizthizzydizzy.resourcespawner.provider.spawn.EntitySpawnProvider;
 import com.thizthizzydizzy.resourcespawner.provider.spawn.WorldEditSchematicSpawnProvider;
 import com.thizthizzydizzy.resourcespawner.provider.world.EnvironmentWorldProvider;
 import com.thizthizzydizzy.resourcespawner.provider.world.NameWorldProvider;
 import com.thizthizzydizzy.resourcespawner.provider.world.UUIDWorldProvider;
 import com.thizthizzydizzy.resourcespawner.sorter.CenterStructureSorter;
+import com.thizthizzydizzy.resourcespawner.sorter.InvertedCenterStructureSorter;
 import com.thizthizzydizzy.resourcespawner.sorter.RandomStructureSorter;
 import com.thizthizzydizzy.resourcespawner.sorter.StructureSorter;
 import com.thizthizzydizzy.resourcespawner.trigger.BlockBreakTrigger;
@@ -298,6 +300,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         event.registerLocationProvider(new NamespacedKey(this, "surface"), new SurfaceLocationProvider());
         event.registerLocationProvider(new NamespacedKey(this, "circle"), new CircleLocationProvider());
         if(getServer().getPluginManager().getPlugin("WorldEdit")!=null)event.registerSpawnProvider(new NamespacedKey(this, "we_schematic"), new WorldEditSchematicSpawnProvider());
+        event.registerSpawnProvider(new NamespacedKey(this, "entity"), new EntitySpawnProvider());
         event.registerCondition(new NamespacedKey(this, "cube_fill"), new CubeFillCondition());
         if(getServer().getPluginManager().getPlugin("WorldGuard")!=null)event.registerCondition(new NamespacedKey(this, "cube_wg_region"), new CubeWorldGuardRegionCondition());
         event.registerCondition(new NamespacedKey(this, "entity_proximity"), new EntityProximityCondition());
@@ -306,6 +309,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         event.registerCondition(new NamespacedKey(this, "block"), new BlockCondition());
         event.registerCondition(new NamespacedKey(this, "biome"), new BiomeCondition());
         event.registerStructureSorter(new NamespacedKey(this, "from_center"), new CenterStructureSorter());
+        event.registerStructureSorter(new NamespacedKey(this, "to_center"), new InvertedCenterStructureSorter());
         event.registerStructureSorter(new NamespacedKey(this, "random"), new RandomStructureSorter());
         event.registerTrigger(new NamespacedKey(this, "block_broken"), new BlockBreakTrigger());
         event.registerTrigger(new NamespacedKey(this, "timer"), new TimerTrigger());
