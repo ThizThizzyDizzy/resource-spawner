@@ -4,42 +4,39 @@ import java.util.Locale;
 import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.hjson.JsonArray;
 import org.hjson.JsonObject;
-import org.hjson.JsonValue;
-public class SquareLocationProvider implements LocationProvider{
-    private int originX;
-    private int originZ;
-    private int radius;
+public class CuboidLocationProvider implements LocationProvider{
+    private int minX;
+    private int maxX;
     private int minY;
     private int maxY;
-    private Distribution verticalDistribution;
-    private Distribution horizontalDistribution;
+    private int minZ;
+    private int maxZ;
+    private Distribution xDistribution;
+    private Distribution yDistribution;
+    private Distribution zDistribution;
     @Override
     public LocationProvider newInstance(){
-        return new SquareLocationProvider();
+        return new CuboidLocationProvider();
     }
     @Override
     public void loadFromConfig(JsonObject json){
-        JsonValue val = json.get("origin");
-        if(val.isArray()){
-            JsonArray origin = val.asArray();
-            if(origin.size()!=2)throw new IllegalArgumentException("origin must have 2 entries! (x,z)");
-            originX = origin.get(0).asInt();
-            originZ = origin.get(1).asInt();
-        }else throw new IllegalArgumentException("origin must be an array!");
-        radius = json.getInt("radius", 0);
+        minX = json.getInt("min_x", Integer.MIN_VALUE);
+        maxX = json.getInt("max_x", Integer.MAX_VALUE);
         minY = json.getInt("min_y", Integer.MIN_VALUE);
         maxY = json.getInt("max_y", Integer.MAX_VALUE);
+        minZ = json.getInt("min_z", Integer.MIN_VALUE);
+        maxZ = json.getInt("max_z", Integer.MAX_VALUE);
         if(maxY<minY)throw new IllegalArgumentException("max_y must be greater than or equal to min_y!");
-        verticalDistribution = Distribution.valueOf(json.getString("vertical_distribution", "even").toUpperCase(Locale.ROOT));
-        horizontalDistribution = Distribution.valueOf(json.getString("horizontal_distribution", "even").toUpperCase(Locale.ROOT));
+        xDistribution = Distribution.valueOf(json.getString("x_distribution", "even").toUpperCase(Locale.ROOT));
+        yDistribution = Distribution.valueOf(json.getString("y_distribution", "even").toUpperCase(Locale.ROOT));
+        zDistribution = Distribution.valueOf(json.getString("z_distribution", "even").toUpperCase(Locale.ROOT));
     }
     @Override
     public Location get(World world, Random rand){
-        int x = horizontalDistribution.get(originX-radius, originX+radius, rand);
-        int y = verticalDistribution.get(minY, maxY, rand);
-        int z = horizontalDistribution.get(originZ-radius, originZ+radius, rand);
+        int x = xDistribution.get(minX, maxX, rand);
+        int y = yDistribution.get(minY, maxY, rand);
+        int z = zDistribution.get(minZ, maxZ, rand);
         return world.getBlockAt(x, y, z).getLocation();
     }
     private enum Distribution{
