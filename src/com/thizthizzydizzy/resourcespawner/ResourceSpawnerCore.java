@@ -27,12 +27,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.world.WorldSaveEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
+import org.hjson.Stringify;
 public class ResourceSpawnerCore extends JavaPlugin implements Listener{
     public final String defaultNamespace = "resourcespawner";
     public final ArrayList<ResourceSpawner> resourceSpawners = new ArrayList<>();
@@ -140,7 +142,6 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                 getLogger().log(Level.SEVERE, "Failed to generate configuration file", ex);
             }
         }
-        //TODO initialize resource spawners
         try{
             JsonObject json = JsonValue.readHjson(new InputStreamReader(new FileInputStream(configFile))).asObject();
             JsonArray spawners = json.get("resource_spawners").asArray();
@@ -148,6 +149,10 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                 if(value.isObject()){
                     JsonObject spawner = value.asObject();
                     String name = spawner.getString("name", null);
+                    if(name==null)throw new IllegalArgumentException("Spawner name cannot be null!");
+                    for(ResourceSpawner rs : resourceSpawners){
+                        if(rs.name.equals(name))throw new IllegalArgumentException("Resource spawner "+name+" already exists! Each resource spawner must have a unique name");
+                    }
                     ResourceSpawner resourceSpawner = new ResourceSpawner(name);
                     JsonValue world_providers = json.get("world_providers");
                     if(world_providers==null)getLogger().log(Level.WARNING, "Resource spawner {0} does not have any world providers!", name);
@@ -237,17 +242,23 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                     }
                     resourceSpawner.limit = spawner.getInt("limit", resourceSpawner.limit);
                     resourceSpawner.spawnDelay = spawner.getInt("spawn_delay", resourceSpawner.spawnDelay);
+                    resourceSpawner.tickInterval = spawner.getInt("tick_interval", resourceSpawner.tickInterval);
                     resourceSpawner.maxTickTime = spawner.getInt("max_tick_time", resourceSpawner.maxTickTime);
                 }else throw new IllegalArgumentException("Invalid resource spawner: "+value.getType().getClass().getName());
             }
         }catch(IOException | UnsupportedOperationException ex){
             throw new RuntimeException("Failed to load configuration file", ex);
         }
+        load();
+        for(ResourceSpawner spawner : resourceSpawners){
+            spawner.init(this);
+        }
         getLogger().log(Level.INFO, "{0} has been enabled! (Version {1}) by ThizThizzyDizzy", new Object[]{pdfFile.getName(), pdfFile.getVersion()});
     }
     @Override
     public void onDisable(){
         PluginDescriptionFile pdfFile = getDescription();
+        save();
         getLogger().log(Level.INFO, "{0} has been disabled! (Version {1}) by ThizThizzyDizzy", new Object[]{pdfFile.getName(), pdfFile.getVersion()});
     }
     @EventHandler
@@ -260,5 +271,60 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         event.registerStructureSorter(new NamespacedKey(this, "random"), new RandomStructureSorter());
         event.registerTrigger(new NamespacedKey(this, "block_broken"), new BlockBreakTrigger(this));
         event.registerTrigger(new NamespacedKey(this, "timer"), new TimerTrigger(this));
+    }
+    @EventHandler
+    public void onSave(WorldSaveEvent event){
+        save();
+    }
+    public void save(){
+        JsonObject json = new JsonObject();
+        JsonArray spawners = new JsonArray();
+        json.set("spawners", spawners);
+        for(ResourceSpawner spawner : resourceSpawners){
+            JsonObject spawnerJson = new JsonObject();
+            spawners.add(spawnerJson);
+            spawnerJson.set("name", spawner.name);
+            JsonArray structures = new JsonArray();
+            spawnerJson.set("structures", structures);
+            for(SpawnedStructure structure : spawner.structures){
+                structures.add(structure.save(this, new JsonObject()));
+            }
+            spawnerJson.set("spawn_timer", spawner.spawnTimer);
+        }
+        File temp = new File(getDataFolder(), "data_do_not_touch.json.temp");
+        if(temp.exists())temp.delete();
+        try{
+            temp.createNewFile();
+            try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(temp)))){
+                json.writeTo(writer, Stringify.PLAIN);
+            }
+        }catch(IOException ex){
+            throw new RuntimeException("Failed to save data!", ex);
+        }
+        File realFile = new File(getDataFolder(), "data_do_not_touch.json");
+        if(realFile.exists())realFile.delete();
+        temp.renameTo(realFile);
+    }
+    private void load(){
+        File file = new File(getDataFolder(), "data_do_not_touch.json");
+        if(!file.exists())return;//nothing to load
+        try{
+            JsonObject json = JsonValue.readHjson(new InputStreamReader(new FileInputStream(file))).asObject();
+            for(JsonValue v : json.get("spawners").asArray()){
+                JsonObject spawnerJson = v.asObject();
+                ResourceSpawner spawner = null;
+                for(ResourceSpawner r : resourceSpawners){
+                    if(r.name.equals(spawnerJson.get("name").asString()))spawner = r;
+                }
+                spawner.spawnTimer = spawnerJson.get("spawn_timer").asInt();
+                JsonArray structures = spawnerJson.get("structures").asArray();
+                for(JsonValue val : structures){
+                    SpawnedStructure structure = SpawnedStructure.load(this, val.asObject());
+                    spawner.structures.add(structure);
+                }
+            }
+        }catch(IOException ex){
+            throw new RuntimeException("Failed to load data!", ex);
+        }
     }
 }

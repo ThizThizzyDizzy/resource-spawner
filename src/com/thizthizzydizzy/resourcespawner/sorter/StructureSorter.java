@@ -1,6 +1,6 @@
 package com.thizthizzydizzy.resourcespawner.sorter;
-import com.thizthizzydizzy.resourcespawner.Structure;
 import java.util.ArrayList;
+import java.util.Collection;
 public interface StructureSorter{
-    public ArrayList<int[]> sort(Structure structure);
+    public ArrayList<int[]> sort(Collection<int[]> data);
 }

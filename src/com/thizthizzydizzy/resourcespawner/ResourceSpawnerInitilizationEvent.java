@@ -1,9 +1,9 @@
 package com.thizthizzydizzy.resourcespawner;
-import com.thizthizzydizzy.resourcespawner.sorter.StructureSorter;
 import com.thizthizzydizzy.resourcespawner.condition.Condition;
 import com.thizthizzydizzy.resourcespawner.provider.LocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.SpawnProvider;
 import com.thizthizzydizzy.resourcespawner.provider.WorldProvider;
+import com.thizthizzydizzy.resourcespawner.sorter.StructureSorter;
 import com.thizthizzydizzy.resourcespawner.trigger.Trigger;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;

@@ -1,28 +1,37 @@
 package com.thizthizzydizzy.resourcespawner.provider.spawn;
 import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
+import com.thizthizzydizzy.resourcespawner.SpawnedStructure;
 import com.thizthizzydizzy.resourcespawner.Structure;
+import com.thizthizzydizzy.resourcespawner.Task;
 import com.thizthizzydizzy.resourcespawner.Vanillify;
 import com.thizthizzydizzy.resourcespawner.condition.Condition;
 import com.thizthizzydizzy.resourcespawner.provider.SpawnProvider;
 import com.thizthizzydizzy.resourcespawner.sorter.StructureSorter;
 import com.thizthizzydizzy.resourcespawner.trigger.Trigger;
+import com.thizthizzydizzy.resourcespawner.trigger.TriggerListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
     protected final ResourceSpawnerCore plugin;
-    private ArrayList<Trigger> resetTriggers = new ArrayList<>();
-    private StructureSorter sorter;//can be null
-    private HashSet<Material> replace;//can be null
-    private int minBuildTime;
-    private boolean shouldDecay = false;
-    private StructureSorter decaySorter;//can be null
-    private int decayDelay;
-    private Structure structure;
-    private int minDecayTime;
+    public HashMap<Trigger, Integer> resetTriggers = new HashMap<>();
+    public StructureSorter sorter;//can be null
+    public HashSet<Material> replace;//can be null
+    public int minBuildTime;
+    public boolean shouldDecay = false;
+    public StructureSorter decaySorter;//can be null
+    public int decayDelay;
+    public Structure structure;
+    public int minDecayTime;
+    public Material decayTo = Material.AIR;
     public AbstractStructureSpawnProvider(ResourceSpawnerCore plugin){
         this.plugin = plugin;
     }
@@ -78,8 +87,8 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
                         }
                     }
                     if(trigger==null)throw new IllegalArgumentException("Unknown trigger: "+name);
-                    trigger.interval = obj.getInt("delay", -1);
-                    if(trigger.interval==-1)throw new IllegalArgumentException("Reset trigger delay must be provided!");
+                    int delay = obj.getInt("delay", -1);
+                    if(delay==-1)throw new IllegalArgumentException("Reset trigger delay must be provided!");
                     JsonValue conditionsJson = obj.get("conditions");//TODO this is duplicated from ResourceSpawnerCore
                     if(conditionsJson!=null){
                         for(JsonValue v : conditionsJson.asArray()){
@@ -100,12 +109,51 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
                             }else throw new IllegalArgumentException("Invalid condition: "+v.getType().getClass().getName());
                         }
                     }
-                    resetTriggers.add(trigger);
+                    resetTriggers.put(trigger, delay);
                 }
             }
+            String decayToS = decayObj.getString("decay_to", null);
+            if(decayToS!=null)decayTo = Material.matchMaterial(decayToS);
         }
         structure = load(json);
         structure.normalize();
     }
-    public abstract Structure load(JsonObject json);//TODO ohno
+    public abstract Structure load(JsonObject json);
+    @Override
+    public Task<SpawnedStructure> spawn(World world, Location location){
+        return new Task<SpawnedStructure>(){
+            private SpawnedStructure spawnedStructure = new SpawnedStructure(AbstractStructureSpawnProvider.this, world, location);
+            private ArrayList<int[]> data = sorter==null?new ArrayList<>(structure.data.keySet()):sorter.sort(structure.data.keySet());
+            private boolean finished = false;
+            @Override
+            public void step(){
+                if(!data.isEmpty()){
+                    int[] pos = data.remove(0);
+                    Block block = world.getBlockAt(location.getBlockX()+pos[0], location.getBlockY()+pos[1], location.getBlockZ()+pos[2]);
+                    BlockData blockData = structure.data.get(pos);
+                    block.setType(blockData.getMaterial());
+                    block.setBlockData(blockData, false);
+                    spawnedStructure.blocks.add(block);
+                    return;
+                }
+                spawnedStructure.decayTimer = decayDelay;
+                for(Trigger trigger : resetTriggers.keySet()){
+                    TriggerListener triggerListener = () -> {
+                        spawnedStructure.decayTimer = Math.max(spawnedStructure.decayTimer, resetTriggers.get(trigger));
+                    };
+                    spawnedStructure.triggerListeners.put(trigger, triggerListener);
+                    trigger.addTriggerListener(triggerListener);
+                }
+                finished = true;
+            }
+            @Override
+            public boolean isFinished(){
+                return finished;
+            }
+            @Override
+            public SpawnedStructure getResult(){
+                return spawnedStructure;
+            }
+        };
+    }
 }

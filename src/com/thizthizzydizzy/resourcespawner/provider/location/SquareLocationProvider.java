@@ -1,4 +1,5 @@
 package com.thizthizzydizzy.resourcespawner.provider.location;
+import com.thizthizzydizzy.resourcespawner.provider.LocationProvider;
 import java.util.Locale;
 import java.util.Random;
 import org.bukkit.Location;
@@ -6,7 +7,6 @@ import org.bukkit.World;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
-import com.thizthizzydizzy.resourcespawner.provider.LocationProvider;
 public class SquareLocationProvider implements LocationProvider{
     private int originX;
     private int originZ;

@@ -4,6 +4,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.hjson.JsonObject;
 public class TimerTrigger extends Trigger{
     private final Plugin plugin;
+    private int interval;
     public TimerTrigger(Plugin plugin){
         this.plugin = plugin;
     }

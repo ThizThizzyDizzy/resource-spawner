@@ -1,12 +1,11 @@
 package com.thizthizzydizzy.resourcespawner.sorter;
-import com.thizthizzydizzy.resourcespawner.Structure;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 public class RandomStructureSorter implements StructureSorter{
     @Override
-    public ArrayList<int[]> sort(Structure structure){
-        structure.normalize();
-        ArrayList<int[]> blocks = new ArrayList<>(structure.data.keySet());
+    public ArrayList<int[]> sort(Collection<int[]> data){
+        ArrayList<int[]> blocks = new ArrayList<>(data);
         Collections.shuffle(blocks);
         return blocks;
     }

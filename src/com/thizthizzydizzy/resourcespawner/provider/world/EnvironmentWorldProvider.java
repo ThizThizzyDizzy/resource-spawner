@@ -1,11 +1,11 @@
 package com.thizthizzydizzy.resourcespawner.provider.world;
+import com.thizthizzydizzy.resourcespawner.provider.WorldProvider;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Random;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.hjson.JsonObject;
-import com.thizthizzydizzy.resourcespawner.provider.WorldProvider;
 public class EnvironmentWorldProvider implements WorldProvider{
     private World.Environment environment;
     @Override
