@@ -1,4 +1,5 @@
 package com.thizthizzydizzy.resourcespawner.condition;
+import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
 import com.thizthizzydizzy.resourcespawner.Task;
 import java.util.HashSet;
 import java.util.Locale;
@@ -15,7 +16,7 @@ public class BiomeCondition implements Condition{
         return new BiomeCondition();
     }
     @Override
-    public void loadFromConfig(JsonObject json){
+    public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
         invert = json.getBoolean("invert", false);
         JsonValue value = json.get("biomes");
         if(value.isArray()){

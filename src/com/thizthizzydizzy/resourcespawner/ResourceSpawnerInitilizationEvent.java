@@ -1,5 +1,6 @@
 package com.thizthizzydizzy.resourcespawner;
 import com.thizthizzydizzy.resourcespawner.condition.Condition;
+import com.thizthizzydizzy.resourcespawner.distribution.Distribution;
 import com.thizthizzydizzy.resourcespawner.provider.LocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.SpawnProvider;
 import com.thizthizzydizzy.resourcespawner.provider.WorldProvider;
@@ -58,7 +59,7 @@ public class ResourceSpawnerInitilizationEvent extends Event{
      * Register a new condition  (Equivelent to getPlugin()#registerCondition)
      * @param key the condition's unique key
      * @param condition the condition to register
-     * @return true if the provider is successfully registered, false otherwise
+     * @return true if the condition is successfully registered, false otherwise
      * @throws IllegalArgumentException if key is null
      */
     public boolean registerCondition(NamespacedKey key, Condition condition) throws IllegalArgumentException{
@@ -78,10 +79,20 @@ public class ResourceSpawnerInitilizationEvent extends Event{
      * Register a new trigger  (Equivelent to getPlugin()#registerTrigger)
      * @param key the trigger's unique key
      * @param trigger the trigger to register
-     * @return true if the provider is successfully registered, false otherwise
+     * @return true if the trigger is successfully registered, false otherwise
      * @throws IllegalArgumentException if key is null
      */
     public boolean registerTrigger(NamespacedKey key, Trigger trigger) throws IllegalArgumentException{
         return plugin.registerTrigger(key, trigger);
+    }
+    /**
+     * Register a new distribution  (Equivelent to getPlugin()#registerDistribution)
+     * @param key the distribution's unique key
+     * @param distribution the distribution to register
+     * @return true if the distribution is successfully registered, false otherwise
+     * @throws IllegalArgumentException if key is null
+     */
+    public boolean registerDistribution(NamespacedKey key, Distribution distribution) throws IllegalArgumentException{
+        return plugin.registerDistribution(key, distribution);
     }
 }

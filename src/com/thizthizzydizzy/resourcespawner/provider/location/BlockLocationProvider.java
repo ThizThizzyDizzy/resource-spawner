@@ -1,4 +1,5 @@
 package com.thizthizzydizzy.resourcespawner.provider.location;
+import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
 import com.thizthizzydizzy.resourcespawner.provider.LocationProvider;
 import java.util.Random;
 import org.bukkit.Location;
@@ -13,7 +14,7 @@ public class BlockLocationProvider implements LocationProvider{
         return new BlockLocationProvider();
     }
     @Override
-    public void loadFromConfig(JsonObject json){
+    public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
         x = json.get("x").asInt();
         y = json.get("y").asInt();
         z = json.get("z").asInt();

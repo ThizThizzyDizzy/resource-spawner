@@ -18,7 +18,7 @@ public class CubeFillCondition implements Condition{
         return new CubeFillCondition();
     }
     @Override
-    public void loadFromConfig(JsonObject json){
+    public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
         radius = json.getInt("radius", 0);//default only checks one block
         JsonValue value = json.get("blocks");
         if(value.isArray()){

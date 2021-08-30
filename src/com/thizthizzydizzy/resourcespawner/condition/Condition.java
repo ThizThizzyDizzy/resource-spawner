@@ -1,11 +1,12 @@
 package com.thizthizzydizzy.resourcespawner.condition;
+import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
 import com.thizthizzydizzy.resourcespawner.Task;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.hjson.JsonObject;
 public interface Condition{
     public Condition newInstance();
-    public void loadFromConfig(JsonObject json);
+    public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json);
     /**
      * Checks the condition at a specified location
      * @param world the world to check in

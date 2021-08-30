@@ -12,15 +12,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import org.hjson.JsonObject;
 public class WorldEditSchematicSpawnProvider extends AbstractStructureSpawnProvider{
-    public WorldEditSchematicSpawnProvider(ResourceSpawnerCore plugin){
-        super(plugin);
-    }
     @Override
     public SpawnProvider newInstance(){
-        return new WorldEditSchematicSpawnProvider(plugin);
+        return new WorldEditSchematicSpawnProvider();
     }
     @Override
-    public Structure load(JsonObject json){
+    public Structure load(ResourceSpawnerCore plugin, JsonObject json){
         String filepath = json.getString("file", "null");
         if(filepath==null)throw new IllegalArgumentException("Schematic file must be provided!");
         File file = new File(plugin.getDataFolder(), filepath);

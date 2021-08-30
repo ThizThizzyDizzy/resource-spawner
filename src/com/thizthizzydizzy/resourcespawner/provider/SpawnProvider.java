@@ -1,4 +1,5 @@
 package com.thizthizzydizzy.resourcespawner.provider;
+import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
 import com.thizthizzydizzy.resourcespawner.SpawnedStructure;
 import com.thizthizzydizzy.resourcespawner.Task;
 import com.thizthizzydizzy.resourcespawner.condition.Condition;
@@ -9,6 +10,6 @@ import org.hjson.JsonObject;
 public abstract class SpawnProvider{
     public ArrayList<Condition> conditions = new ArrayList<>();
     public abstract SpawnProvider newInstance();
-    public abstract void loadFromConfig(JsonObject json);
+    public abstract void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json);
     public abstract Task<SpawnedStructure> spawn(World world, Location location);
 }

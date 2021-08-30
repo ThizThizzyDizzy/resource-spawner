@@ -1,4 +1,6 @@
 package com.thizthizzydizzy.resourcespawner.provider.location;
+import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
+import com.thizthizzydizzy.resourcespawner.distribution.Distribution;
 import com.thizthizzydizzy.resourcespawner.provider.LocationProvider;
 import java.util.Locale;
 import java.util.Random;
@@ -20,15 +22,15 @@ public class SquareLocationProvider implements LocationProvider{
         return new SquareLocationProvider();
     }
     @Override
-    public void loadFromConfig(JsonObject json){
+    public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
         originX = json.get("x").asInt();
         originZ = json.get("z").asInt();
         radius = json.getInt("radius", 0);
         minY = json.getInt("min_y", Integer.MIN_VALUE);
         maxY = json.getInt("max_y", Integer.MAX_VALUE);
         if(maxY<minY)throw new IllegalArgumentException("max_y must be greater than or equal to min_y!");
-        verticalDistribution = Distribution.valueOf(json.getString("vertical_distribution", "even").toUpperCase(Locale.ROOT));
-        horizontalDistribution = Distribution.valueOf(json.getString("horizontal_distribution", "even").toUpperCase(Locale.ROOT));
+        verticalDistribution = plugin.getDistribution(json.getString("vertical_distribution", "even"));
+        horizontalDistribution = plugin.getDistribution(json.getString("horizontal_distribution", "even"));
     }
     @Override
     public Location get(World world, Random rand){
@@ -36,19 +38,5 @@ public class SquareLocationProvider implements LocationProvider{
         int y = verticalDistribution.get(minY, maxY, rand);
         int z = horizontalDistribution.get(originZ-radius, originZ+radius, rand);
         return world.getBlockAt(x, y, z).getLocation();
-    }
-    private enum Distribution{
-        EVEN {
-            @Override
-            int get(int min, int max, Random rand){
-                return rand.nextInt(max-min+1)+min;
-            }
-        }, GAUSSIAN {//center is halfway between min and max, standard deviation hits min and max
-            @Override
-            int get(int min, int max, Random rand){
-                return (int)(rand.nextGaussian()*(max-min))+(max-min)/2;
-            }
-        };
-        abstract int get(int min, int max, Random rand);
     }
 }

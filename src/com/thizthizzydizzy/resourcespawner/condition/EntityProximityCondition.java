@@ -1,4 +1,5 @@
 package com.thizthizzydizzy.resourcespawner.condition;
+import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
 import com.thizthizzydizzy.resourcespawner.Task;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +20,7 @@ public class EntityProximityCondition implements Condition{
         return new EntityProximityCondition();
     }
     @Override
-    public void loadFromConfig(JsonObject json){
+    public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
         radius = json.get("radius").asInt();//radius is required
         invert = json.getBoolean("invert", false);
         JsonValue ents = json.get("entities");

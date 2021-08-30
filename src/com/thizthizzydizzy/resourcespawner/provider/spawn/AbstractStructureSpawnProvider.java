@@ -21,7 +21,6 @@ import org.bukkit.block.data.BlockData;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
-    protected final ResourceSpawnerCore plugin;
     public HashMap<Trigger, Integer> resetTriggers = new HashMap<>();
     public StructureSorter sorter;//can be null
     public HashSet<Material> replace;//can be null
@@ -32,19 +31,11 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
     public Structure structure;
     public int minDecayTime;
     public Material decayTo = Material.AIR;
-    public AbstractStructureSpawnProvider(ResourceSpawnerCore plugin){
-        this.plugin = plugin;
-    }
     @Override
-    public void loadFromConfig(JsonObject json){
+    public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
         String buildOrder = json.getString("build_order", null);
         if(buildOrder!=null){
-            if(!buildOrder.contains(":"))buildOrder = plugin.defaultNamespace+":"+buildOrder;
-            for(NamespacedKey key : plugin.structureSorters.keySet()){
-                if(key.toString().equals(buildOrder)){
-                    sorter = plugin.structureSorters.get(key);
-                }
-            }
+            sorter = plugin.getStructureSorter(buildOrder);
             if(sorter==null)throw new IllegalArgumentException("Unknown structure sorter: "+buildOrder);
         }
         JsonValue repl = json.get("replace");
@@ -61,12 +52,7 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
             shouldDecay = true;
             String decayOrder = decayObj.getString("decay_order", null);
             if(decayOrder!=null){
-                if(!decayOrder.contains(":"))decayOrder = plugin.defaultNamespace+":"+decayOrder;
-                for(NamespacedKey key : plugin.structureSorters.keySet()){
-                    if(key.toString().equals(decayOrder)){
-                        decaySorter = plugin.structureSorters.get(key);
-                    }
-                }
+                decaySorter = plugin.getStructureSorter(decayOrder);
                 if(decaySorter==null)throw new IllegalArgumentException("Unknown structure sorter: "+decayOrder);
             }
             decayDelay = decayObj.getInt("delay", -1);
@@ -77,34 +63,20 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
                 for(JsonValue value : resetTriggersObj.asArray()){
                     JsonObject obj = value.asObject();
                     String name = obj.getString("trigger", null);
-                    if(name==null)throw new IllegalArgumentException("Trigger cannot be null!");
-                    if(!name.contains(":"))name = plugin.defaultNamespace+":"+name;
-                    Trigger trigger = null;
-                    for(NamespacedKey key : plugin.triggers.keySet()){
-                        if(key.toString().equals(name)){
-                            trigger = plugin.triggers.get(key).newInstance();
-                            trigger.loadFromConfig(obj);
-                        }
-                    }
+                    Trigger trigger = plugin.getTrigger(name);
                     if(trigger==null)throw new IllegalArgumentException("Unknown trigger: "+name);
+                    trigger.loadFromConfig(plugin, obj);
                     int delay = obj.getInt("delay", -1);
                     if(delay==-1)throw new IllegalArgumentException("Reset trigger delay must be provided!");
-                    JsonValue conditionsJson = obj.get("conditions");//TODO this is duplicated from ResourceSpawnerCore
+                    JsonValue conditionsJson = obj.get("conditions");
                     if(conditionsJson!=null){
                         for(JsonValue v : conditionsJson.asArray()){
                             if(v.isObject()){
                                 JsonObject conditionJson = v.asObject();
                                 String conditionType = conditionJson.getString("type", null);
-                                if(conditionType==null)throw new IllegalArgumentException("Condition type cannot be null!");
-                                if(!conditionType.contains(":"))conditionType = plugin.defaultNamespace+":"+conditionType;
-                                Condition condition = null;
-                                for(NamespacedKey key : plugin.conditions.keySet()){
-                                    if(key.toString().equals(conditionType)){
-                                        condition = plugin.conditions.get(key).newInstance();
-                                        condition.loadFromConfig(conditionJson);
-                                    }
-                                }
+                                Condition condition = plugin.getCondition(conditionType);
                                 if(condition==null)throw new IllegalArgumentException("Unknown condition: "+conditionType);
+                                condition.loadFromConfig(plugin, conditionJson);
                                 trigger.conditions.add(condition);
                             }else throw new IllegalArgumentException("Invalid condition: "+v.getType().getClass().getName());
                         }
@@ -115,10 +87,10 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
             String decayToS = decayObj.getString("decay_to", null);
             if(decayToS!=null)decayTo = Material.matchMaterial(decayToS);
         }
-        structure = load(json);
+        structure = load(plugin, json);
         structure.normalize();
     }
-    public abstract Structure load(JsonObject json);
+    public abstract Structure load(ResourceSpawnerCore plugin, JsonObject json);
     @Override
     public Task<SpawnedStructure> spawn(World world, Location location){
         return new Task<SpawnedStructure>(){

@@ -1,4 +1,5 @@
 package com.thizthizzydizzy.resourcespawner.condition;
+import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
 import com.thizthizzydizzy.resourcespawner.Task;
 import com.thizthizzydizzy.resourcespawner.Vanillify;
 import java.util.HashSet;
@@ -18,7 +19,7 @@ public class BlockCondition implements Condition{
         return new BlockCondition();
     }
     @Override
-    public void loadFromConfig(JsonObject json){
+    public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
         xOff = json.getInt("x_offset", 0);
         yOff = json.getInt("y_offset", 0);
         zOff = json.getInt("z_offset", 0);

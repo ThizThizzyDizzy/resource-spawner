@@ -1,4 +1,5 @@
 package com.thizthizzydizzy.resourcespawner.condition;
+import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
 import com.thizthizzydizzy.resourcespawner.Task;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -11,7 +12,7 @@ public class WorldTimeCondition implements Condition{
         return new WorldTimeCondition();
     }
     @Override
-    public void loadFromConfig(JsonObject json){
+    public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
         JsonValue minValue = json.get("min");
         if(minValue!=null)min = minValue.asLong();
         JsonValue maxValue = json.get("max");

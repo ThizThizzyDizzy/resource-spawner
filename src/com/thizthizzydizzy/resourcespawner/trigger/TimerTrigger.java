@@ -1,19 +1,16 @@
 package com.thizthizzydizzy.resourcespawner.trigger;
+import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.hjson.JsonObject;
 public class TimerTrigger extends Trigger{
-    private final Plugin plugin;
     private int interval;
-    public TimerTrigger(Plugin plugin){
-        this.plugin = plugin;
-    }
     @Override
     public Trigger newInstance(){
-        return new TimerTrigger(plugin);
+        return new TimerTrigger();
     }
     @Override
-    public void loadFromConfig(JsonObject obj){
+    public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject obj){
         interval = obj.getInt("interval", -1);
         if(interval==-1)throw new IllegalArgumentException("Timer interval must be provided!");
         new BukkitRunnable() {

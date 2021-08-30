@@ -21,7 +21,7 @@ public class CubeWorldGuardRegionCondition implements Condition{
         return new CubeWorldGuardRegionCondition();
     }
     @Override
-    public void loadFromConfig(JsonObject json){
+    public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
         radius = json.getInt("radius", 0);//default only checks one block
         invert = json.getBoolean("invert", false);
         JsonValue rgs = json.get("regions");

@@ -1,4 +1,5 @@
 package com.thizthizzydizzy.resourcespawner.provider.world;
+import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
 import com.thizthizzydizzy.resourcespawner.provider.WorldProvider;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -13,7 +14,7 @@ public class EnvironmentWorldProvider implements WorldProvider{
         return new EnvironmentWorldProvider();
     }
     @Override
-    public void loadFromConfig(JsonObject json){
+    public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
         environment = World.Environment.valueOf(json.getString("environment", "normal").toUpperCase(Locale.ROOT).replace("OVERWORLD", "NORMAL"));
     }
     @Override

@@ -7,6 +7,9 @@ import com.thizthizzydizzy.resourcespawner.condition.CubeWorldGuardRegionConditi
 import com.thizthizzydizzy.resourcespawner.condition.EntityProximityCondition;
 import com.thizthizzydizzy.resourcespawner.condition.MoonPhaseCondition;
 import com.thizthizzydizzy.resourcespawner.condition.WorldTimeCondition;
+import com.thizthizzydizzy.resourcespawner.distribution.Distribution;
+import com.thizthizzydizzy.resourcespawner.distribution.EvenDistribution;
+import com.thizthizzydizzy.resourcespawner.distribution.GaussianDistribution;
 import com.thizthizzydizzy.resourcespawner.provider.LocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.SpawnProvider;
 import com.thizthizzydizzy.resourcespawner.provider.WorldProvider;
@@ -53,6 +56,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
     public final HashMap<NamespacedKey, Condition> conditions = new HashMap<>();
     public final HashMap<NamespacedKey, StructureSorter> structureSorters = new HashMap<>();
     public final HashMap<NamespacedKey, Trigger> triggers = new HashMap<>();
+    public final HashMap<NamespacedKey, Distribution> distributions = new HashMap<>();
     public static boolean debug = false;
     /**
      * Register a new world provider
@@ -63,7 +67,10 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
      */
     public boolean registerWorldProvider(NamespacedKey key, WorldProvider provider) throws IllegalArgumentException{
         if(key==null)throw new IllegalArgumentException("Key must not be null!");
-        if(worldProviders.containsKey(key))return false;
+        if(worldProviders.containsKey(key)){
+            getLogger().log(Level.WARNING, "World provider {0} already exists! Skipping...", key.toString());
+            return false;
+        }
         worldProviders.put(key, provider);
         return true;
     }
@@ -76,7 +83,10 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
      */
     public boolean registerLocationProvider(NamespacedKey key, LocationProvider provider) throws IllegalArgumentException{
         if(key==null)throw new IllegalArgumentException("Key must not be null!");
-        if(locationProviders.containsKey(key))return false;
+        if(locationProviders.containsKey(key)){
+            getLogger().log(Level.WARNING, "Location provider {0} already exists! Skipping...", key.toString());
+            return false;
+        }
         locationProviders.put(key, provider);
         return true;
     }
@@ -89,7 +99,10 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
      */
     public boolean registerSpawnProvider(NamespacedKey key, SpawnProvider provider) throws IllegalArgumentException{
         if(key==null)throw new IllegalArgumentException("Key must not be null!");
-        if(spawnProviders.containsKey(key))return false;
+        if(spawnProviders.containsKey(key)){
+            getLogger().log(Level.WARNING, "Spawn provider {0} already exists! Skipping...", key.toString());
+            return false;
+        }
         spawnProviders.put(key, provider);
         return true;
     }
@@ -97,12 +110,15 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
      * Register a new condition
      * @param key the condition's unique key
      * @param condition the condition to register
-     * @return true if the provider is successfully registered, false otherwise
+     * @return true if the condition is successfully registered, false otherwise
      * @throws IllegalArgumentException if key is null
      */
     public boolean registerCondition(NamespacedKey key, Condition condition) throws IllegalArgumentException{
         if(key==null)throw new IllegalArgumentException("Key must not be null!");
-        if(conditions.containsKey(key))return false;
+        if(conditions.containsKey(key)){
+            getLogger().log(Level.WARNING, "Condition {0} already exists! Skipping...", key.toString());
+            return false;
+        }
         conditions.put(key, condition);
         return true;
     }
@@ -115,7 +131,10 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
      */
     public boolean registerStructureSorter(NamespacedKey key, StructureSorter sorter) throws IllegalArgumentException{
         if(key==null)throw new IllegalArgumentException("Key must not be null!");
-        if(structureSorters.containsKey(key))return false;
+        if(structureSorters.containsKey(key)){
+            getLogger().log(Level.WARNING, "Structure sorter {0} already exists! Skipping...", key.toString());
+            return false;
+        }
         structureSorters.put(key, sorter);
         return true;
     }
@@ -123,13 +142,32 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
      * Register a new trigger
      * @param key the trigger's unique key
      * @param trigger the trigger to register
-     * @return true if the provider is successfully registered, false otherwise
+     * @return true if the trigger is successfully registered, false otherwise
      * @throws IllegalArgumentException if key is null
      */
     public boolean registerTrigger(NamespacedKey key, Trigger trigger) throws IllegalArgumentException{
         if(key==null)throw new IllegalArgumentException("Key must not be null!");
-        if(triggers.containsKey(key))return false;
+        if(triggers.containsKey(key)){
+            getLogger().log(Level.WARNING, "Trigger {0} already exists! Skipping...", key.toString());
+            return false;
+        }
         triggers.put(key, trigger);
+        return true;
+    }
+    /**
+     * Register a new random distribution
+     * @param key the distribution's unique key
+     * @param distribution the distribution to register
+     * @return true if the distribution is successfully registered, false otherwise
+     * @throws IllegalArgumentException if key is null
+     */
+    public boolean registerDistribution(NamespacedKey key, Distribution distribution) throws IllegalArgumentException{
+        if(key==null)throw new IllegalArgumentException("Key must not be null!");
+        if(distributions.containsKey(key)){
+            getLogger().log(Level.WARNING, "Distribution {0} already exists! Skipping...", key.toString());
+            return false;
+        }
+        distributions.put(key, distribution);
         return true;
     }
     @Override
@@ -172,17 +210,10 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                             if(val.isObject()){
                                 JsonObject worldProvider = val.asObject();
                                 String type = worldProvider.getString("type", null);
-                                if(type==null)throw new IllegalArgumentException("World provider type cannot be null!");
-                                int weight = worldProvider.getInt("weight", 1);
-                                if(!type.contains(":"))type = defaultNamespace+":"+type;
-                                WorldProvider provider = null;
-                                for(NamespacedKey key : worldProviders.keySet()){
-                                    if(key.toString().equals(type)){
-                                        provider = worldProviders.get(key).newInstance();
-                                        provider.loadFromConfig(worldProvider);
-                                    }
-                                }
+                                WorldProvider provider = getWorldProvider(type);
                                 if(provider==null)throw new IllegalArgumentException("Unknown world provider: "+type);
+                                provider.loadFromConfig(this, worldProvider);
+                                int weight = worldProvider.getInt("weight", 1);
                                 resourceSpawner.worldProviders.put(provider, weight);
                             }else throw new IllegalArgumentException("Invalid world provider: "+val.getType().getClass().getName());
                         }
@@ -194,17 +225,10 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                             if(val.isObject()){
                                 JsonObject locationProvider = val.asObject();
                                 String type = locationProvider.getString("type", null);
-                                if(type==null)throw new IllegalArgumentException("Location provider type cannot be null!");
-                                int weight = locationProvider.getInt("weight", 1);
-                                if(!type.contains(":"))type = defaultNamespace+":"+type;
-                                LocationProvider provider = null;
-                                for(NamespacedKey key : locationProviders.keySet()){
-                                    if(key.toString().equals(type)){
-                                        provider = locationProviders.get(key).newInstance();
-                                        provider.loadFromConfig(locationProvider);
-                                    }
-                                }
+                                LocationProvider provider = getLocationProvider(type);
                                 if(provider==null)throw new IllegalArgumentException("Unknown location provider: "+type);
+                                provider.loadFromConfig(this, locationProvider);
+                                int weight = locationProvider.getInt("weight", 1);
                                 resourceSpawner.locationProviders.put(provider, weight);
                             }else throw new IllegalArgumentException("Invalid location provider: "+val.getType().getClass().getName());
                         }
@@ -216,33 +240,19 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                             if(val.isObject()){
                                 JsonObject spawn = val.asObject();
                                 String type = spawn.getString("type", null);
-                                if(type==null)throw new IllegalArgumentException("Spawn type cannot be null!");
-                                int weight = spawn.getInt("weight", 1);
-                                if(!type.contains(":"))type = defaultNamespace+":"+type;
-                                SpawnProvider provider = null;
-                                for(NamespacedKey key : spawnProviders.keySet()){
-                                    if(key.toString().equals(type)){
-                                        provider = spawnProviders.get(key).newInstance();
-                                        provider.loadFromConfig(spawn);
-                                    }
-                                }
+                                SpawnProvider provider = getSpawnProvider(type);
                                 if(provider==null)throw new IllegalArgumentException("Unknown spawn provider: "+type);
+                                provider.loadFromConfig(this, spawn);
+                                int weight = spawn.getInt("weight", 1);
                                 JsonValue conditionsJson = spawn.get("conditions");
                                 if(conditionsJson!=null){
                                     for(JsonValue v : conditionsJson.asArray()){
                                         if(v.isObject()){
                                             JsonObject conditionJson = v.asObject();
                                             String conditionType = conditionJson.getString("type", null);
-                                            if(conditionType==null)throw new IllegalArgumentException("Condition type cannot be null!");
-                                            if(!conditionType.contains(":"))conditionType = defaultNamespace+":"+conditionType;
-                                            Condition condition = null;
-                                            for(NamespacedKey key : conditions.keySet()){
-                                                if(key.toString().equals(conditionType)){
-                                                    condition = conditions.get(key).newInstance();
-                                                    condition.loadFromConfig(conditionJson);
-                                                }
-                                            }
+                                            Condition condition = getCondition(conditionType);
                                             if(condition==null)throw new IllegalArgumentException("Unknown condition: "+conditionType);
+                                            condition.loadFromConfig(this, conditionJson);
                                             provider.conditions.add(condition);
                                         }else throw new IllegalArgumentException("Invalid condition: "+v.getType().getClass().getName());
                                     }
@@ -281,9 +291,9 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         event.registerLocationProvider(new NamespacedKey(this, "cuboid"), new CuboidLocationProvider());
         event.registerLocationProvider(new NamespacedKey(this, "block"), new BlockLocationProvider());
         event.registerLocationProvider(new NamespacedKey(this, "surface"), new SurfaceLocationProvider());
-        if(getServer().getPluginManager().getPlugin("WorldEdit")!=null)event.registerSpawnProvider(new NamespacedKey(this, "we_schematic"), new WorldEditSchematicSpawnProvider(this));
+        if(getServer().getPluginManager().getPlugin("WorldEdit")!=null)event.registerSpawnProvider(new NamespacedKey(this, "we_schematic"), new WorldEditSchematicSpawnProvider());
         event.registerCondition(new NamespacedKey(this, "cube_fill"), new CubeFillCondition());
-        event.registerCondition(new NamespacedKey(this, "cube_wg_region"), new CubeWorldGuardRegionCondition());
+        if(getServer().getPluginManager().getPlugin("WorldGuard")!=null)event.registerCondition(new NamespacedKey(this, "cube_wg_region"), new CubeWorldGuardRegionCondition());
         event.registerCondition(new NamespacedKey(this, "entity_proximity"), new EntityProximityCondition());
         event.registerCondition(new NamespacedKey(this, "world_time"), new WorldTimeCondition());
         event.registerCondition(new NamespacedKey(this, "moon_phase"), new MoonPhaseCondition());
@@ -291,8 +301,10 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         event.registerCondition(new NamespacedKey(this, "biome"), new BiomeCondition());
         event.registerStructureSorter(new NamespacedKey(this, "from_center"), new CenterStructureSorter());
         event.registerStructureSorter(new NamespacedKey(this, "random"), new RandomStructureSorter());
-        event.registerTrigger(new NamespacedKey(this, "block_broken"), new BlockBreakTrigger(this));
-        event.registerTrigger(new NamespacedKey(this, "timer"), new TimerTrigger(this));
+        event.registerTrigger(new NamespacedKey(this, "block_broken"), new BlockBreakTrigger());
+        event.registerTrigger(new NamespacedKey(this, "timer"), new TimerTrigger());
+        event.registerDistribution(new NamespacedKey(this, "even"), new EvenDistribution());
+        event.registerDistribution(new NamespacedKey(this, "gaussian"), new GaussianDistribution());
     }
     @EventHandler
     public void onSave(WorldSaveEvent event){
@@ -348,5 +360,54 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         }catch(IOException ex){
             throw new RuntimeException("Failed to load data!", ex);
         }
+    }
+    public WorldProvider getWorldProvider(String key){
+        if(!key.contains(":"))key = defaultNamespace+":"+key;
+        for(NamespacedKey k : worldProviders.keySet()){
+            if(k.toString().equals(key))return worldProviders.get(k).newInstance();
+        }
+        return null;
+    }
+    public LocationProvider getLocationProvider(String key){
+        if(!key.contains(":"))key = defaultNamespace+":"+key;
+        for(NamespacedKey k : locationProviders.keySet()){
+            if(k.toString().equals(key))return locationProviders.get(k).newInstance();
+        }
+        return null;
+    }
+    public SpawnProvider getSpawnProvider(String key){
+        if(!key.contains(":"))key = defaultNamespace+":"+key;
+        for(NamespacedKey k : spawnProviders.keySet()){
+            if(k.toString().equals(key))return spawnProviders.get(k).newInstance();
+        }
+        return null;
+    }
+    public Condition getCondition(String key){
+        if(!key.contains(":"))key = defaultNamespace+":"+key;
+        for(NamespacedKey k : conditions.keySet()){
+            if(k.toString().equals(key))return conditions.get(k).newInstance();
+        }
+        return null;
+    }
+    public StructureSorter getStructureSorter(String key){
+        if(!key.contains(":"))key = defaultNamespace+":"+key;
+        for(NamespacedKey k : structureSorters.keySet()){
+            if(k.toString().equals(key))return structureSorters.get(k);
+        }
+        return null;
+    }
+    public Trigger getTrigger(String key){
+        if(!key.contains(":"))key = defaultNamespace+":"+key;
+        for(NamespacedKey k : triggers.keySet()){
+            if(k.toString().equals(key))return triggers.get(k).newInstance();
+        }
+        return null;
+    }
+    public Distribution getDistribution(String key){
+        if(!key.contains(":"))key = defaultNamespace+":"+key;
+        for(NamespacedKey k : distributions.keySet()){
+            if(k.toString().equals(key))return distributions.get(k);
+        }
+        return null;
     }
 }
