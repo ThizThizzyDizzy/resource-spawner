@@ -1,4 +1,5 @@
 package com.thizthizzydizzy.resourcespawner;
+import com.thizthizzydizzy.resourcespawner.condition.BlockCondition;
 import com.thizthizzydizzy.resourcespawner.condition.Condition;
 import com.thizthizzydizzy.resourcespawner.condition.CubeFillCondition;
 import com.thizthizzydizzy.resourcespawner.condition.CubeWorldGuardRegionCondition;
@@ -283,6 +284,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         event.registerCondition(new NamespacedKey(this, "entity_proximity"), new EntityProximityCondition());
         event.registerCondition(new NamespacedKey(this, "world_time"), new WorldTimeCondition());
         event.registerCondition(new NamespacedKey(this, "moon_phase"), new MoonPhaseCondition());
+        event.registerCondition(new NamespacedKey(this, "block"), new BlockCondition());
         event.registerStructureSorter(new NamespacedKey(this, "from_center"), new CenterStructureSorter());
         event.registerStructureSorter(new NamespacedKey(this, "random"), new RandomStructureSorter());
         event.registerTrigger(new NamespacedKey(this, "block_broken"), new BlockBreakTrigger(this));
