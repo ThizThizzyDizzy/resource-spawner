@@ -13,6 +13,7 @@ import com.thizthizzydizzy.resourcespawner.provider.WorldProvider;
 import com.thizthizzydizzy.resourcespawner.provider.location.BlockLocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.location.CuboidLocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.location.SquareLocationProvider;
+import com.thizthizzydizzy.resourcespawner.provider.location.SurfaceLocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.spawn.WorldEditSchematicSpawnProvider;
 import com.thizthizzydizzy.resourcespawner.provider.world.EnvironmentWorldProvider;
 import com.thizthizzydizzy.resourcespawner.sorter.CenterStructureSorter;
@@ -279,6 +280,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         event.registerLocationProvider(new NamespacedKey(this, "square"), new SquareLocationProvider());
         event.registerLocationProvider(new NamespacedKey(this, "cuboid"), new CuboidLocationProvider());
         event.registerLocationProvider(new NamespacedKey(this, "block"), new BlockLocationProvider());
+        event.registerLocationProvider(new NamespacedKey(this, "surface"), new SurfaceLocationProvider());
         if(getServer().getPluginManager().getPlugin("WorldEdit")!=null)event.registerSpawnProvider(new NamespacedKey(this, "we_schematic"), new WorldEditSchematicSpawnProvider(this));
         event.registerCondition(new NamespacedKey(this, "cube_fill"), new CubeFillCondition());
         event.registerCondition(new NamespacedKey(this, "cube_wg_region"), new CubeWorldGuardRegionCondition());
