@@ -10,5 +10,5 @@ public abstract class SpawnProvider{
     public ArrayList<Condition> conditions = new ArrayList<>();
     public abstract SpawnProvider newInstance();
     public abstract void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json);
-    public abstract Task spawn(World world, Location location);
+    public abstract Task spawn(ResourceSpawnerCore plugin, World world, Location location);
 }

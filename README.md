@@ -54,6 +54,7 @@ ResourceSpawner uses Hjson for its configuration to avoid the messiness of YAML,
 
 ```
 {
+    debug: false //this line is optional, but set it to true to enable a lot of console output for debugging
     resource_spawners: [
         {
             //a resource spawner
@@ -544,6 +545,10 @@ Structure spawn providers are a type of spawn provider that generate structures.
 <details>
 <summary><b>Settings common to all structure spawn providers</b></summary>
 
+String **`name` (Required)**
+
+The name of the spawn provider, used for saving/loading and for debugging. Must be unique
+
 String **`build_order`**
 
 The order in which blocks will spawn. should be a namespaced id matching that of a Structure Sorter (see **Structure Sorters**)
@@ -618,6 +623,7 @@ The path to the schematic file, from the ResourceSpawner folder (a value of `fol
 ```
 {
     type: we_schematic //namespace not required for built-in stuff
+    name: wow_so_cool
     weight: 1 //common settings
     file: some/interesting/subfolder/cool_structure.schem
     conditions: [

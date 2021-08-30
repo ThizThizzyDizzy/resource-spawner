@@ -188,6 +188,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                 configFile.createNewFile();
                 try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(configFile)))){
                     writer.write("{\n" +
+                                 "    debug: false\n" +
                                  "    resource_spawners: [\n" +
                                  "    ]\n" +
                                  "}");
@@ -198,6 +199,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         }
         try{
             JsonObject json = JsonValue.readHjson(new InputStreamReader(new FileInputStream(configFile))).asObject();
+            debug = json.getBoolean("debug", false);
             JsonArray spawners = json.get("resource_spawners").asArray();
             for(JsonValue value : spawners){
                 if(value.isObject()){

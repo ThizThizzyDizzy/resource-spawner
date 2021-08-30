@@ -15,10 +15,12 @@ public class BlockBreakTrigger extends StructureTrigger implements Listener{
     private SpawnedStructure structure;
     @Override
     public Trigger newInstance(){
+        if(ResourceSpawnerCore.debug)System.out.println("BlockBreakTrigger new instance");
         return new BlockBreakTrigger();
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
+        if(ResourceSpawnerCore.debug)System.out.println("BlockBreakTrigger loading from config");
         JsonValue blox = json.get("blocks");
         if(blox!=null){
             materials = new HashSet<>();
@@ -29,20 +31,24 @@ public class BlockBreakTrigger extends StructureTrigger implements Listener{
     }
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event){
+        if(ResourceSpawnerCore.debug)System.out.println("BlockBreakTrigger onBlockBreak");
         if(!structure.blocks.contains(event.getBlock()))return;//not one of my blocks
+        if(ResourceSpawnerCore.debug)System.out.println("BlockBreakTrigger onBlockBreak - one of my blocks was broken!");
         if(materials!=null&&!materials.contains(event.getBlock().getType()))return;
         trigger();
     }
     @Override
     public StructureTrigger newInstance(ResourceSpawnerCore plugin, SpawnedStructure structure){
+        if(ResourceSpawnerCore.debug)System.out.println("BlockBreakTrigger new structure instance!");
         BlockBreakTrigger trigger = new BlockBreakTrigger();
         trigger.structure = structure;
         plugin.getServer().getPluginManager().registerEvents(trigger, plugin);
-        trigger.materials = new HashSet<>(materials);
+        trigger.materials = materials;
         return trigger;
     }
     @Override
     public void dissolve(){
+        if(ResourceSpawnerCore.debug)System.out.println("BlockBreakTrigger dissolving");
         HandlerList.unregisterAll(this);
     }
 }

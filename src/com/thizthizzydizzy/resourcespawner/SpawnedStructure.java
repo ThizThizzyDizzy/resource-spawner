@@ -1,4 +1,5 @@
 package com.thizthizzydizzy.resourcespawner;
+import com.thizthizzydizzy.resourcespawner.provider.SpawnProvider;
 import com.thizthizzydizzy.resourcespawner.provider.spawn.AbstractStructureSpawnProvider;
 import com.thizthizzydizzy.resourcespawner.trigger.StructureTrigger;
 import com.thizthizzydizzy.resourcespawner.trigger.Trigger;
@@ -6,6 +7,7 @@ import com.thizthizzydizzy.resourcespawner.trigger.TriggerListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.logging.Level;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
@@ -65,13 +67,7 @@ public class SpawnedStructure{
         };
     }
     public JsonObject save(ResourceSpawnerCore plugin, JsonObject json){
-        String key = null;
-        for(NamespacedKey k : plugin.spawnProviders.keySet()){
-            if(plugin.spawnProviders.get(k)==spawnProvider){
-                key = k.toString();
-            }
-        }
-        json.set("spawn_provider", key);
+        json.set("spawn_provider", spawnProvider.name);
         json.set("world", world.getUID().toString());
         json.set("x", pos.getBlockX());
         json.set("y", pos.getBlockY());
@@ -80,13 +76,20 @@ public class SpawnedStructure{
         return json;
     }
     public static SpawnedStructure load(ResourceSpawnerCore plugin, JsonObject json){
-        String spawn_provider = json.get("spawn_provider").asString();
-        AbstractStructureSpawnProvider spawnProvider = null;
-        for(NamespacedKey k : plugin.spawnProviders.keySet()){
-            if(k.toString().equals(spawn_provider))spawnProvider = (AbstractStructureSpawnProvider)plugin.spawnProviders.get(k);
-        }
         World world = plugin.getServer().getWorld(UUID.fromString(json.get("world").asString()));
         Location pos = new Location(world, json.get("x").asInt(), json.get("y").asInt(), json.get("z").asInt());
+        String spawn_provider = json.get("spawn_provider").asString();
+        AbstractStructureSpawnProvider spawnProvider = null;
+        for(ResourceSpawner s : plugin.resourceSpawners){
+            for(SpawnProvider provider : s.spawnProviders.keySet()){
+                if(provider instanceof AbstractStructureSpawnProvider){
+                    if(spawn_provider.equals(((AbstractStructureSpawnProvider)provider).name))spawnProvider = (AbstractStructureSpawnProvider)provider;
+                }
+            }
+        }
+        if(spawnProvider==null){
+            plugin.getLogger().log(Level.WARNING, "Failed to load spawned structure: unknown spawn provider {0}! Structure position: ({1},{2},{3}) in world {4}", new Object[]{spawn_provider, pos.getBlockX(), pos.getBlockY(), pos.getBlockZ(), world.getName()});
+        }
         SpawnedStructure spawnedStructure = new SpawnedStructure(spawnProvider, world, pos);
         spawnedStructure.decayTimer = json.get("decay_timer").asInt();
         for(Location l : spawnedStructure.spawnProvider.structure.data.keySet()){

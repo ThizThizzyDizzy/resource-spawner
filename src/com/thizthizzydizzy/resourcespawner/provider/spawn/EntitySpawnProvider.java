@@ -19,7 +19,7 @@ public class EntitySpawnProvider extends SpawnProvider{
         entity = EntityType.valueOf(json.get("entity").asString().toUpperCase(Locale.ROOT));
     }
     @Override
-    public Task<Entity> spawn(World world, Location location){
+    public Task<Entity> spawn(ResourceSpawnerCore plugin, World world, Location location){
         return new Task<Entity>() {
             private Entity result;
             @Override
