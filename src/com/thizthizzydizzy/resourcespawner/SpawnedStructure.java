@@ -77,15 +77,6 @@ public class SpawnedStructure{
         json.set("y", pos.getBlockY());
         json.set("z", pos.getBlockZ());
         json.set("decay_timer", decayTimer);
-        JsonArray blocks = new JsonArray();
-        for(Block b : this.blocks){
-            JsonArray block = new JsonArray();
-            block.add(b.getX());
-            block.add(b.getY());
-            block.add(b.getZ());
-            blocks.add(block);
-        }
-        json.set("blocks", blocks);
         return json;
     }
     public static SpawnedStructure load(ResourceSpawnerCore plugin, JsonObject json){
@@ -98,10 +89,8 @@ public class SpawnedStructure{
         Location pos = new Location(world, json.get("x").asInt(), json.get("y").asInt(), json.get("z").asInt());
         SpawnedStructure spawnedStructure = new SpawnedStructure(spawnProvider, world, pos);
         spawnedStructure.decayTimer = json.get("decay_timer").asInt();
-        JsonArray blocks = json.get("blocks").asArray();
-        for(JsonValue val : blocks){
-            JsonArray block = val.asArray();
-            spawnedStructure.blocks.add(world.getBlockAt(block.get(0).asInt(), block.get(1).asInt(), block.get(2).asInt()));
+        for(Location l : spawnedStructure.spawnProvider.structure.data.keySet()){
+            spawnedStructure.blocks.add(world.getBlockAt(pos.getBlockX()+l.getBlockX(), pos.getBlockY()+l.getBlockY(), pos.getBlockZ()+l.getBlockZ()));
         }
         AbstractStructureSpawnProvider spawnProviderButEffectivelyFinal = spawnProvider;
         for(Trigger trigger : spawnProvider.resetTriggers.keySet()){
