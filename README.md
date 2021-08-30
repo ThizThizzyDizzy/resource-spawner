@@ -486,7 +486,7 @@ id: `resourcespawner:surface`
 
 Provides random locations from the surface in a given square
 
-Provided locations are the highest solid block at each x/z value, as described in [World#GetHighestBlockAt](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/World.html#getHighestBlockAt(int,int))
+Initial locations are the highest solid block at each x/z value, as described in [World#GetHighestBlockAt](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/World.html#getHighestBlockAt(int,int))
 
 ##### Settings
 
@@ -497,6 +497,10 @@ The x coordinate of the center of the square
 int **`z` (Required)**
 
 The z coordinate of the center of the square
+
+int **`y_offset`** (Default 1)
+The height off the ground that is the location provided
+if set to 0, the ground block itself will be provided.
 
 int **`radius`** (Default 0)
 

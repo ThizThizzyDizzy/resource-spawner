@@ -10,6 +10,7 @@ public class SurfaceLocationProvider implements LocationProvider{
     private int originX;
     private int originZ;
     private int radius;
+    private int yOffset;
     private Distribution distribution;
     @Override
     public LocationProvider newInstance(){
@@ -19,6 +20,7 @@ public class SurfaceLocationProvider implements LocationProvider{
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
         originX = json.get("x").asInt();
         originZ = json.get("z").asInt();
+        yOffset = json.getInt("y_offset", 1);
         radius = json.getInt("radius", 0);
         distribution = plugin.getDistribution(json.getString("distribution", "even"));
     }
@@ -26,6 +28,8 @@ public class SurfaceLocationProvider implements LocationProvider{
     public Location get(World world, Random rand){
         int x = distribution.get(originX-radius, originX+radius, rand);
         int z = distribution.get(originZ-radius, originZ+radius, rand);
-        return world.getHighestBlockAt(x, z).getLocation();
+        Location loc = world.getHighestBlockAt(x, z).getLocation();
+        loc.setY(loc.getY()+yOffset);
+        return loc;
     }
 }
