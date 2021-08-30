@@ -19,9 +19,9 @@ public class BlockCondition implements Condition{
     }
     @Override
     public void loadFromConfig(JsonObject json){
-        xOff = json.get("x_offset").asInt();
-        yOff = json.get("y_offset").asInt();
-        zOff = json.get("z_offset").asInt();
+        xOff = json.getInt("x_offset", 0);
+        yOff = json.getInt("y_offset", 0);
+        zOff = json.getInt("z_offset", 0);
         invert = json.getBoolean("invert", false);
         JsonValue value = json.get("blocks");
         if(value.isArray()){
