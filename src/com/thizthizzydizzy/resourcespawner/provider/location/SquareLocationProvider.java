@@ -21,13 +21,8 @@ public class SquareLocationProvider implements LocationProvider{
     }
     @Override
     public void loadFromConfig(JsonObject json){
-        JsonValue val = json.get("origin");
-        if(val.isArray()){
-            JsonArray origin = val.asArray();
-            if(origin.size()!=2)throw new IllegalArgumentException("origin must have 2 entries! (x,z)");
-            originX = origin.get(0).asInt();
-            originZ = origin.get(1).asInt();
-        }else throw new IllegalArgumentException("origin must be an array!");
+        originX = json.get("x").asInt();
+        originZ = json.get("z").asInt();
         radius = json.getInt("radius", 0);
         minY = json.getInt("min_y", Integer.MIN_VALUE);
         maxY = json.getInt("max_y", Integer.MAX_VALUE);
