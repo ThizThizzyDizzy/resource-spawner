@@ -14,11 +14,14 @@ import com.thizthizzydizzy.resourcespawner.provider.LocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.SpawnProvider;
 import com.thizthizzydizzy.resourcespawner.provider.WorldProvider;
 import com.thizthizzydizzy.resourcespawner.provider.location.BlockLocationProvider;
+import com.thizthizzydizzy.resourcespawner.provider.location.CircleLocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.location.CuboidLocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.location.SquareLocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.location.SurfaceLocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.spawn.WorldEditSchematicSpawnProvider;
 import com.thizthizzydizzy.resourcespawner.provider.world.EnvironmentWorldProvider;
+import com.thizthizzydizzy.resourcespawner.provider.world.NameWorldProvider;
+import com.thizthizzydizzy.resourcespawner.provider.world.UUIDWorldProvider;
 import com.thizthizzydizzy.resourcespawner.sorter.CenterStructureSorter;
 import com.thizthizzydizzy.resourcespawner.sorter.RandomStructureSorter;
 import com.thizthizzydizzy.resourcespawner.sorter.StructureSorter;
@@ -287,10 +290,13 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
     @EventHandler
     public void init(ResourceSpawnerInitilizationEvent event){
         event.registerWorldProvider(new NamespacedKey(this, "environment"), new EnvironmentWorldProvider());
+        event.registerWorldProvider(new NamespacedKey(this, "uuid"), new UUIDWorldProvider());
+        event.registerWorldProvider(new NamespacedKey(this, "name"), new NameWorldProvider());
         event.registerLocationProvider(new NamespacedKey(this, "square"), new SquareLocationProvider());
         event.registerLocationProvider(new NamespacedKey(this, "cuboid"), new CuboidLocationProvider());
         event.registerLocationProvider(new NamespacedKey(this, "block"), new BlockLocationProvider());
         event.registerLocationProvider(new NamespacedKey(this, "surface"), new SurfaceLocationProvider());
+        event.registerLocationProvider(new NamespacedKey(this, "circle"), new CircleLocationProvider());
         if(getServer().getPluginManager().getPlugin("WorldEdit")!=null)event.registerSpawnProvider(new NamespacedKey(this, "we_schematic"), new WorldEditSchematicSpawnProvider());
         event.registerCondition(new NamespacedKey(this, "cube_fill"), new CubeFillCondition());
         if(getServer().getPluginManager().getPlugin("WorldGuard")!=null)event.registerCondition(new NamespacedKey(this, "cube_wg_region"), new CubeWorldGuardRegionCondition());
