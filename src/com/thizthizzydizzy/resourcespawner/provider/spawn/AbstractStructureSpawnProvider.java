@@ -123,13 +123,13 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
     public Task<SpawnedStructure> spawn(World world, Location location){
         return new Task<SpawnedStructure>(){
             private SpawnedStructure spawnedStructure = new SpawnedStructure(AbstractStructureSpawnProvider.this, world, location);
-            private ArrayList<int[]> data = sorter==null?new ArrayList<>(structure.data.keySet()):sorter.sort(structure.data.keySet());
+            private ArrayList<Location> data = sorter==null?new ArrayList<>(structure.data.keySet()):sorter.sort(structure.data.keySet());
             private boolean finished = false;
             @Override
             public void step(){
                 if(!data.isEmpty()){
-                    int[] pos = data.remove(0);
-                    Block block = world.getBlockAt(location.getBlockX()+pos[0], location.getBlockY()+pos[1], location.getBlockZ()+pos[2]);
+                    Location pos = data.remove(0);
+                    Block block = world.getBlockAt(location.getBlockX()+pos.getBlockX(), location.getBlockY()+pos.getBlockY(), location.getBlockZ()+pos.getBlockZ());
                     BlockData blockData = structure.data.get(pos);
                     block.setType(blockData.getMaterial());
                     block.setBlockData(blockData, false);

@@ -2,13 +2,14 @@ package com.thizthizzydizzy.resourcespawner.sorter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import org.bukkit.Location;
 public class CenterStructureSorter implements StructureSorter{
     @Override
-    public ArrayList<int[]> sort(Collection<int[]> data){
-        ArrayList<int[]> blocks = new ArrayList<>(data);
+    public ArrayList<Location> sort(Collection<Location> data){
+        ArrayList<Location> blocks = new ArrayList<>(data);
         Collections.sort(blocks, (o1, o2) -> {
-            long dist1 = Math.round(Math.sqrt(o1[0]*o1[0]+o1[1]*o1[1]+o1[2]*o1[2])*1000);
-            long dist2 = Math.round(Math.sqrt(o2[0]*o2[0]+o2[1]*o2[1]+o2[2]*o2[2])*1000);
+            long dist1 = Math.round(Math.sqrt(o1.getBlockX()*o1.getBlockX()+o1.getBlockY()*o1.getBlockY()+o1.getBlockZ()*o1.getBlockZ())*1000);
+            long dist2 = Math.round(Math.sqrt(o2.getBlockX()*o2.getBlockX()+o2.getBlockY()*o2.getBlockY()+o2.getBlockZ()*o2.getBlockZ())*1000);
             return (int)(dist1-dist2);
         });
         return blocks;

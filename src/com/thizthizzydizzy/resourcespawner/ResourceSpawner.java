@@ -49,13 +49,17 @@ public class ResourceSpawner{
         return null;
     }
     public void init(ResourceSpawnerCore plugin){
+        if(ResourceSpawnerCore.debug)System.out.println("Resource Spawner "+name+" Initialized!");
         new BukkitRunnable() {
             @Override
             public void run(){
                 spawnTimer-=tickInterval;
                 if(spawnTimer<=0){
                     spawnTimer = spawnDelay;//because it's in seconds
-                    if(spawnTask!=null&&structures.size()<limit)startSpawn();
+                    if(spawnTask==null){
+                        if(ResourceSpawnerCore.debug)System.out.println("Spawn timer hit; "+(spawnTask==null)+" "+structures.size()+"<"+limit);
+                        if(structures.size()<limit)startSpawn();
+                    }
                 }
                 for(SpawnedStructure s : structures){
                     if(s.decayTimer==Integer.MIN_VALUE)continue;//doesn't decay
@@ -68,6 +72,7 @@ public class ResourceSpawner{
                 }
                 if(taskProcessor==null&&!tasks.isEmpty()){
                     Task<SpawnedStructure> task = tasks.remove(0);
+                    if(ResourceSpawnerCore.debug)System.out.println("Starting task processor");
                     taskProcessor = new BukkitRunnable() {
                         @Override
                         public void run(){
@@ -79,12 +84,13 @@ public class ResourceSpawner{
                             }
                             SpawnedStructure s = task.getResult();
                             if(task==spawnTask){
-                                structures.add(s);
+                                if(s!=null)structures.add(s);
                                 spawnTask = null;
                             }else{
                                 structures.remove(s);
                             }
                             taskProcessor = null;
+                            if(ResourceSpawnerCore.debug)System.out.println("Task processor finished");
                             cancel();
                         }
                     }.runTaskTimer(plugin, 0, 1);
@@ -93,8 +99,11 @@ public class ResourceSpawner{
         }.runTaskTimer(plugin, 0, tickInterval);
     }
     private void startSpawn(){
+        if(ResourceSpawnerCore.debug)System.out.println("Attempting to spawn structure...");
         World world = chooseWeighted(worldProviders, rand).get(rand);
+        if(ResourceSpawnerCore.debug)System.out.println("World: "+world.getName()+" ("+world.getUID()+")");
         Location loc = chooseWeighted(locationProviders, rand).get(world, rand);
+        if(ResourceSpawnerCore.debug)System.out.println("Location: "+loc.toString());
         SpawnProvider spawnProvider = chooseWeighted(spawnProviders, rand);
         spawnTask = new Task<SpawnedStructure>(){
             private ArrayList<Condition> conditions = new ArrayList<>(spawnProvider.conditions);
@@ -111,19 +120,28 @@ public class ResourceSpawner{
                     }else{
                         if(!conditionTask.getResult()){
                             failed = true;
+                            if(ResourceSpawnerCore.debug)System.out.println("Condition Failed");
                             return;
                         }
+                        if(ResourceSpawnerCore.debug)System.out.println("Condition passed");
                         conditionTask = null;
                     }
                 }
                 if(!conditions.isEmpty()){
+                    if(ResourceSpawnerCore.debug)System.out.println("Checking Condition...");
                     conditionTask = conditions.remove(0).check(world, loc);
                     return;
                 }
                 //All conditions have been met; begin spawning
-                if(spawnTask==null)spawnTask = spawnProvider.spawn(world, loc);
+                if(spawnTask==null){
+                    if(ResourceSpawnerCore.debug)System.out.println("Spawn conditions passed; spawning...");
+                    spawnTask = spawnProvider.spawn(world, loc);
+                }
                 spawnTask.step();
-                if(spawnTask.isFinished())result = spawnTask.getResult();
+                if(spawnTask.isFinished()){
+                    result = spawnTask.getResult();
+                    if(ResourceSpawnerCore.debug)System.out.println("Spawned!");
+                }
             }
             @Override
             public boolean isFinished(){

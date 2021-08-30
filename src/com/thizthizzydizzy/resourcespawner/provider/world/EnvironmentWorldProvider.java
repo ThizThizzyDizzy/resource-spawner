@@ -14,7 +14,7 @@ public class EnvironmentWorldProvider implements WorldProvider{
     }
     @Override
     public void loadFromConfig(JsonObject json){
-        environment = World.Environment.valueOf(json.getString("environment", "overworld").toUpperCase(Locale.ROOT));
+        environment = World.Environment.valueOf(json.getString("environment", "normal").toUpperCase(Locale.ROOT).replace("OVERWORLD", "NORMAL"));
     }
     @Override
     public World get(Random rand){

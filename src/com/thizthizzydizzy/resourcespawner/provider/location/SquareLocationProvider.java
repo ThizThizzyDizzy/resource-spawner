@@ -28,7 +28,7 @@ public class SquareLocationProvider implements LocationProvider{
             originX = origin.get(0).asInt();
             originZ = origin.get(1).asInt();
         }else throw new IllegalArgumentException("origin must be an array!");
-        radius = json.getInt("origin", 0);
+        radius = json.getInt("radius", 0);
         minY = json.getInt("min_y", Integer.MIN_VALUE);
         maxY = json.getInt("max_y", Integer.MAX_VALUE);
         if(maxY<minY)throw new IllegalArgumentException("max_y must be greater than or equal to min_y!");

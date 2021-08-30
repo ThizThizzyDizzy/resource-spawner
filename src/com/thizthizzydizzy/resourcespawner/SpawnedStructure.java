@@ -27,20 +27,20 @@ public class SpawnedStructure{
         this.pos = pos;
     }
     public Task<SpawnedStructure> decay(){
-        HashMap<int[], Block> data = new HashMap<>();
+        HashMap<Location, Block> data = new HashMap<>();
         for(Block b : blocks){
-            int[] offset = new int[]{b.getX()-pos.getBlockX(), b.getY()-pos.getBlockY(), b.getZ()-pos.getBlockZ()};
+            Location offset = new Location(null, b.getX()-pos.getBlockX(), b.getY()-pos.getBlockY(), b.getZ()-pos.getBlockZ());
             BlockData shouldBe = spawnProvider.structure.data.get(offset);
             if(b.getType()!=shouldBe.getMaterial())continue;//not the same block; SKIP!
             data.put(offset, b);
         }
-        ArrayList<int[]> decayOrder = spawnProvider.decaySorter==null?new ArrayList<>(data.keySet()):spawnProvider.decaySorter.sort(data.keySet());
+        ArrayList<Location> decayOrder = spawnProvider.decaySorter==null?new ArrayList<>(data.keySet()):spawnProvider.decaySorter.sort(data.keySet());
         return new Task<SpawnedStructure>() {
             private boolean finished = false;
             @Override
             public void step(){
                 if(!decayOrder.isEmpty()){
-                    int[] pos = decayOrder.remove(0);
+                    Location pos = decayOrder.remove(0);
                     Block block = data.get(pos);
                     block.setType(spawnProvider.decayTo);
                     return;

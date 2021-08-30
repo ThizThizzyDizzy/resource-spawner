@@ -44,6 +44,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
     public final HashMap<NamespacedKey, Condition> conditions = new HashMap<>();
     public final HashMap<NamespacedKey, StructureSorter> structureSorters = new HashMap<>();
     public final HashMap<NamespacedKey, Trigger> triggers = new HashMap<>();
+    public static boolean debug = false;
     /**
      * Register a new world provider
      * @param key the world provider's unique key
@@ -129,6 +130,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         pm.registerEvents(this, this);
         Bukkit.getServer().getPluginManager().callEvent(new ResourceSpawnerInitilizationEvent(this));
         File configFile = new File(getDataFolder(), "config.hjson");
+        if(!getDataFolder().exists())getDataFolder().mkdirs();
         if(!configFile.exists()){
             try{
                 configFile.createNewFile();
@@ -154,7 +156,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                         if(rs.name.equals(name))throw new IllegalArgumentException("Resource spawner "+name+" already exists! Each resource spawner must have a unique name");
                     }
                     ResourceSpawner resourceSpawner = new ResourceSpawner(name);
-                    JsonValue world_providers = json.get("world_providers");
+                    JsonValue world_providers = spawner.get("world_providers");
                     if(world_providers==null)getLogger().log(Level.WARNING, "Resource spawner {0} does not have any world providers!", name);
                     else{
                         for(JsonValue val : world_providers.asArray()){
@@ -176,7 +178,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                             }else throw new IllegalArgumentException("Invalid world provider: "+val.getType().getClass().getName());
                         }
                     }
-                    JsonValue location_providers = json.get("location_providers");
+                    JsonValue location_providers = spawner.get("location_providers");
                     if(location_providers==null)getLogger().log(Level.WARNING, "Resource spawner {0} does not have any location providers!", name);
                     else{
                         for(JsonValue val : location_providers.asArray()){
@@ -198,7 +200,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                             }else throw new IllegalArgumentException("Invalid location provider: "+val.getType().getClass().getName());
                         }
                     }
-                    JsonValue spawns = json.get("spawns");
+                    JsonValue spawns = spawner.get("spawns");
                     if(spawns==null)getLogger().log(Level.WARNING, "Resource spawner {0} does not have any spawns!", name);
                     else{
                         for(JsonValue val : spawns.asArray()){
@@ -244,12 +246,14 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                     resourceSpawner.spawnDelay = spawner.getInt("spawn_delay", resourceSpawner.spawnDelay);
                     resourceSpawner.tickInterval = spawner.getInt("tick_interval", resourceSpawner.tickInterval);
                     resourceSpawner.maxTickTime = spawner.getInt("max_tick_time", resourceSpawner.maxTickTime);
+                    resourceSpawners.add(resourceSpawner);
                 }else throw new IllegalArgumentException("Invalid resource spawner: "+value.getType().getClass().getName());
             }
         }catch(IOException | UnsupportedOperationException ex){
             throw new RuntimeException("Failed to load configuration file", ex);
         }
         load();
+        if(ResourceSpawnerCore.debug)System.out.println("Initializing "+resourceSpawners.size()+" spawners...");
         for(ResourceSpawner spawner : resourceSpawners){
             spawner.init(this);
         }
