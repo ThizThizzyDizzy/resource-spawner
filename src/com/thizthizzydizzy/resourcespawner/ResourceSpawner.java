@@ -36,6 +36,7 @@ public class ResourceSpawner{
         return chooseWeighted(locationProviders, rand).get(world, rand);
     }
     public <T> T chooseWeighted(HashMap<T, Integer> items, Random rand){
+        if(items.isEmpty())return null;
         int completeWeight = 0;
         for (T item : items.keySet()){
             completeWeight+=items.get(item);;
@@ -100,10 +101,22 @@ public class ResourceSpawner{
     }
     private void startSpawn(){
         if(ResourceSpawnerCore.debug)System.out.println("Attempting to spawn structure...");
+        if(worldProviders.isEmpty()){
+            if(ResourceSpawnerCore.debug)System.out.println("No world providers");
+            return;
+        }
         World world = chooseWeighted(worldProviders, rand).get(rand);
         if(ResourceSpawnerCore.debug)System.out.println("World: "+world.getName()+" ("+world.getUID()+")");
+        if(locationProviders.isEmpty()){
+            if(ResourceSpawnerCore.debug)System.out.println("No location providers");
+            return;
+        }
         Location loc = chooseWeighted(locationProviders, rand).get(world, rand);
         if(ResourceSpawnerCore.debug)System.out.println("Location: "+loc.toString());
+        if(spawnProviders.isEmpty()){
+            if(ResourceSpawnerCore.debug)System.out.println("No spawn providers");
+            return;
+        }
         SpawnProvider spawnProvider = chooseWeighted(spawnProviders, rand);
         spawnTask = new Task<SpawnedStructure>(){
             private ArrayList<Condition> conditions = new ArrayList<>(spawnProvider.conditions);
