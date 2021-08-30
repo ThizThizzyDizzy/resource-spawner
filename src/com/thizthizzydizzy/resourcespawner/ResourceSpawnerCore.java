@@ -2,6 +2,7 @@ package com.thizthizzydizzy.resourcespawner;
 import com.thizthizzydizzy.resourcespawner.condition.Condition;
 import com.thizthizzydizzy.resourcespawner.condition.CubeFillCondition;
 import com.thizthizzydizzy.resourcespawner.condition.CubeWorldGuardRegionCondition;
+import com.thizthizzydizzy.resourcespawner.condition.EntityProximityCondition;
 import com.thizthizzydizzy.resourcespawner.provider.LocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.SpawnProvider;
 import com.thizthizzydizzy.resourcespawner.provider.WorldProvider;
@@ -273,6 +274,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         if(getServer().getPluginManager().getPlugin("WorldEdit")!=null)event.registerSpawnProvider(new NamespacedKey(this, "we_schematic"), new WorldEditSchematicSpawnProvider(this));
         event.registerCondition(new NamespacedKey(this, "cube_fill"), new CubeFillCondition());
         event.registerCondition(new NamespacedKey(this, "cube_wg_region"), new CubeWorldGuardRegionCondition());
+        event.registerCondition(new NamespacedKey(this, "entity_proximity"), new EntityProximityCondition());
         event.registerStructureSorter(new NamespacedKey(this, "from_center"), new CenterStructureSorter());
         event.registerStructureSorter(new NamespacedKey(this, "random"), new RandomStructureSorter());
         event.registerTrigger(new NamespacedKey(this, "block_broken"), new BlockBreakTrigger(this));
