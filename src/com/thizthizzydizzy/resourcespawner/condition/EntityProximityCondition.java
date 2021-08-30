@@ -2,8 +2,6 @@ package com.thizthizzydizzy.resourcespawner.condition;
 import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
 import com.thizthizzydizzy.resourcespawner.Task;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Locale;
 import org.bukkit.Location;
 import org.bukkit.World;

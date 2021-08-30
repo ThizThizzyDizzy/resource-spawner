@@ -1,6 +1,5 @@
 package com.thizthizzydizzy.resourcespawner.trigger;
 import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.hjson.JsonObject;
 public class TimerTrigger extends Trigger{

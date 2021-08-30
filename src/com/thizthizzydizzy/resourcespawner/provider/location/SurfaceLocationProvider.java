@@ -2,7 +2,6 @@ package com.thizthizzydizzy.resourcespawner.provider.location;
 import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
 import com.thizthizzydizzy.resourcespawner.distribution.Distribution;
 import com.thizthizzydizzy.resourcespawner.provider.LocationProvider;
-import java.util.Locale;
 import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.World;
