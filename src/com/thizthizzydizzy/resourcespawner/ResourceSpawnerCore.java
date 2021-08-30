@@ -8,6 +8,7 @@ import com.thizthizzydizzy.resourcespawner.condition.WorldTimeCondition;
 import com.thizthizzydizzy.resourcespawner.provider.LocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.SpawnProvider;
 import com.thizthizzydizzy.resourcespawner.provider.WorldProvider;
+import com.thizthizzydizzy.resourcespawner.provider.location.BlockLocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.location.CuboidLocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.location.SquareLocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.spawn.WorldEditSchematicSpawnProvider;
@@ -275,6 +276,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         event.registerWorldProvider(new NamespacedKey(this, "environment"), new EnvironmentWorldProvider());
         event.registerLocationProvider(new NamespacedKey(this, "square"), new SquareLocationProvider());
         event.registerLocationProvider(new NamespacedKey(this, "cuboid"), new CuboidLocationProvider());
+        event.registerLocationProvider(new NamespacedKey(this, "block"), new BlockLocationProvider());
         if(getServer().getPluginManager().getPlugin("WorldEdit")!=null)event.registerSpawnProvider(new NamespacedKey(this, "we_schematic"), new WorldEditSchematicSpawnProvider(this));
         event.registerCondition(new NamespacedKey(this, "cube_fill"), new CubeFillCondition());
         event.registerCondition(new NamespacedKey(this, "cube_wg_region"), new CubeWorldGuardRegionCondition());

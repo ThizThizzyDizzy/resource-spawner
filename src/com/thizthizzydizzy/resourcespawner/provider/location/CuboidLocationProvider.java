@@ -27,7 +27,9 @@ public class CuboidLocationProvider implements LocationProvider{
         maxY = json.getInt("max_y", Integer.MAX_VALUE);
         minZ = json.getInt("min_z", Integer.MIN_VALUE);
         maxZ = json.getInt("max_z", Integer.MAX_VALUE);
+        if(maxX<minX)throw new IllegalArgumentException("max_x must be greater than or equal to min_x!");
         if(maxY<minY)throw new IllegalArgumentException("max_y must be greater than or equal to min_y!");
+        if(maxZ<minZ)throw new IllegalArgumentException("max_z must be greater than or equal to min_z!");
         xDistribution = Distribution.valueOf(json.getString("x_distribution", "even").toUpperCase(Locale.ROOT));
         yDistribution = Distribution.valueOf(json.getString("y_distribution", "even").toUpperCase(Locale.ROOT));
         zDistribution = Distribution.valueOf(json.getString("z_distribution", "even").toUpperCase(Locale.ROOT));
