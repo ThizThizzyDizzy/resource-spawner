@@ -3,12 +3,14 @@ import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
 import com.thizthizzydizzy.resourcespawner.Task;
 import com.thizthizzydizzy.resourcespawner.Vanillify;
 import java.util.HashSet;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 public class CubeFillCondition implements Condition{
+    private static final String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3].substring(1);
     private int radius;
     private HashSet<Material> blocks = new HashSet<>();
     private Double minPercent, maxPercent;
@@ -49,7 +51,12 @@ public class CubeFillCondition implements Condition{
     public Task<Boolean> check(World world, Location location){
         if(ResourceSpawnerCore.debug)System.out.println("Creating check task for "+getClass().getName());
         int minX = location.getBlockX()-radius;
-        int minY = Math.max(0, location.getBlockY()-radius);//TODO 1.17 min world height!
+        int minY;
+        if(serverVersion.contains("1_16")){
+            minY = Math.max(0, location.getBlockY()-radius);
+        }else{
+            minY = Math.max(world.getMinHeight(), location.getBlockY()-radius);
+        }
         int minZ = location.getBlockZ()-radius;
         int maxX = location.getBlockX()+radius;
         int maxY = Math.min(world.getMaxHeight(), location.getBlockY()+radius);

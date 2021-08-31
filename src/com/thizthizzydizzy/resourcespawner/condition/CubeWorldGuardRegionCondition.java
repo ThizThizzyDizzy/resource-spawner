@@ -8,11 +8,13 @@ import com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore;
 import com.thizthizzydizzy.resourcespawner.Task;
 import java.util.ArrayList;
 import java.util.Set;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 public class CubeWorldGuardRegionCondition implements Condition{
+    private static final String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3].substring(1);
     private int radius;
     private boolean invert;
     private ArrayList<String> regions = new ArrayList<>();
@@ -38,9 +40,13 @@ public class CubeWorldGuardRegionCondition implements Condition{
     @Override
     public Task<Boolean> check(World world, Location location){
         if(ResourceSpawnerCore.debug)System.out.println("Creating check task for "+getClass().getName());
-        if(ResourceSpawnerCore.debug)System.out.println("WorldGuardRegion check");
         int minX = location.getBlockX()-radius;
-        int minY = Math.max(0, location.getBlockY()-radius);//TODO 1.17 min world height!
+        int minY;
+        if(serverVersion.contains("1_16")){
+            minY = Math.max(0, location.getBlockY()-radius);
+        }else{
+            minY = Math.max(world.getMinHeight(), location.getBlockY()-radius);
+        }
         int minZ = location.getBlockZ()-radius;
         int maxX = location.getBlockX()+radius;
         int maxY = Math.min(world.getMaxHeight(), location.getBlockY()+radius);
