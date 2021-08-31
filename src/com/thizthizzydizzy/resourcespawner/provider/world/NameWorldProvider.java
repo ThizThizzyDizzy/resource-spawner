@@ -13,7 +13,7 @@ public class NameWorldProvider implements WorldProvider{
     private boolean blacklist;
     @Override
     public WorldProvider newInstance(){
-        return new UUIDWorldProvider();
+        return new NameWorldProvider();
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){

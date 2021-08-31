@@ -820,7 +820,7 @@ Searches for entities in a spherical radius around the spawn location
 
 ##### Settings
 
-int **`radius`** (Default 0)
+int **`radius` (Required)**
 
 The radius of the sphere to check
 
