@@ -197,7 +197,7 @@ All worlds have an equal chance of being selected; For individual weights, make 
 
 ##### Settings
 
-Array **`worlds`** (Default normal)
+Array **`worlds` (Required)**
 
 A list of worlds to provide. Each entry must be a string with the String representation of the world's UUID (with dashes!)
 
@@ -874,7 +874,7 @@ boolean **`invert`** (default false)
 
 if true, this condition will fail if the block matches any of those listed in `blocks`
 
-Array **`blocks`**
+Array **`blocks` (Required)**
 
 A list of blocks to search for 
 
@@ -909,7 +909,7 @@ boolean **`invert`** (default false)
 
 if true, this condition will fail if the biome matches any of those listed in `biomes`
 
-Array **`biomes`**
+Array **`biomes` (Required)**
 
 A list of biomes to search for 
 
