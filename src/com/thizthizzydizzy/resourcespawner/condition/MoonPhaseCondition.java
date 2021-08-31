@@ -13,13 +13,17 @@ public class MoonPhaseCondition implements Condition{
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
+        if(ResourceSpawnerCore.debug)System.out.println("Loading "+getClass().getName());
         JsonValue minValue = json.get("min");
         if(minValue!=null)min = minValue.asInt();
+        if(ResourceSpawnerCore.debug)System.out.println("min: "+min);
         JsonValue maxValue = json.get("max");
         if(maxValue!=null)max = maxValue.asInt();
+        if(ResourceSpawnerCore.debug)System.out.println("max: "+max);
     }
     @Override
     public Task<Boolean> check(World world, Location location){
+        if(ResourceSpawnerCore.debug)System.out.println("Creating check task for "+getClass().getName());
         return new Task<Boolean>() {
             Boolean result = null;
             @Override

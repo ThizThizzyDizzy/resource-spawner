@@ -20,10 +20,15 @@ public class BlockCondition implements Condition{
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
+        if(ResourceSpawnerCore.debug)System.out.println("Loading "+getClass().getName());
         xOff = json.getInt("x_offset", 0);
+        if(ResourceSpawnerCore.debug)System.out.println("xOff: "+xOff);
         yOff = json.getInt("y_offset", 0);
+        if(ResourceSpawnerCore.debug)System.out.println("yOff: "+yOff);
         zOff = json.getInt("z_offset", 0);
+        if(ResourceSpawnerCore.debug)System.out.println("zOff: "+zOff);
         invert = json.getBoolean("invert", false);
+        if(ResourceSpawnerCore.debug)System.out.println("invert: "+invert);
         JsonValue value = json.get("blocks");
         if(value.isArray()){
             for(JsonValue val : value.asArray()){
@@ -33,9 +38,11 @@ public class BlockCondition implements Condition{
                 }else throw new IllegalArgumentException("Block must be a String! "+val.getClass().getName());
             }
         }else throw new IllegalArgumentException("blocks must be an array!");
+        if(ResourceSpawnerCore.debug)System.out.println("blocks: "+blocks.toString());
     }
     @Override
     public Task<Boolean> check(World world, Location location){
+        if(ResourceSpawnerCore.debug)System.out.println("Creating check task for "+getClass().getName());
         return new Task<Boolean>() {
             Boolean result = null;
             @Override

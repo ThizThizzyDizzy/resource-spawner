@@ -17,6 +17,7 @@ public class NameWorldProvider implements WorldProvider{
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
+        if(ResourceSpawnerCore.debug)System.out.println("Loading "+getClass().getName());
         JsonValue value = json.get("worlds");
         if(value.isArray()){
             for(JsonValue val : value.asArray()){
@@ -25,7 +26,9 @@ public class NameWorldProvider implements WorldProvider{
                 }else throw new IllegalArgumentException("World name must be a String! "+val.getClass().getName());
             }
         }else throw new IllegalArgumentException("worlds must be an array!");
+        if(ResourceSpawnerCore.debug)System.out.println("Worlds: "+worlds.toString());
         blacklist = json.getBoolean("blacklist", false);
+        if(ResourceSpawnerCore.debug)System.out.println("Blacklist: "+blacklist);
     }
     @Override
     public World get(Random rand){

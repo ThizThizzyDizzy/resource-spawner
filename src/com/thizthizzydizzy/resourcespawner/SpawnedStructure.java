@@ -9,13 +9,10 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Level;
 import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
-import org.hjson.JsonArray;
 import org.hjson.JsonObject;
-import org.hjson.JsonValue;
 public class SpawnedStructure{
     private final AbstractStructureSpawnProvider spawnProvider;
     public final ArrayList<Block> blocks = new ArrayList<>();
@@ -30,6 +27,7 @@ public class SpawnedStructure{
         this.pos = pos;
     }
     public Task<SpawnedStructure> decay(){
+        if(ResourceSpawnerCore.debug)System.out.println("Preparing decay task");
         HashMap<Location, Block> data = new HashMap<>();
         for(Block b : blocks){
             Location offset = new Location(null, b.getX()-pos.getBlockX(), b.getY()-pos.getBlockY(), b.getZ()-pos.getBlockZ());
@@ -38,6 +36,7 @@ public class SpawnedStructure{
             data.put(offset, b);
         }
         ArrayList<Location> decayOrder = spawnProvider.decaySorter==null?new ArrayList<>(data.keySet()):spawnProvider.decaySorter.sort(data.keySet());
+        if(ResourceSpawnerCore.debug)System.out.println("Creating decay task");
         return new Task<SpawnedStructure>() {
             private boolean finished = false;
             @Override

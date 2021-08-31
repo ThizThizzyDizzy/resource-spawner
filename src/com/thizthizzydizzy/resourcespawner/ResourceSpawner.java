@@ -54,10 +54,13 @@ public class ResourceSpawner{
         new BukkitRunnable() {
             @Override
             public void run(){
+                if(ResourceSpawnerCore.debug)System.out.println("Resource Spawner "+name+" Ticking");
                 spawnTimer-=tickInterval;
                 if(spawnTimer<=0){
+                    if(ResourceSpawnerCore.debug)System.out.println("Spawn timer hit!");
                     spawnTimer = spawnDelay;
                     if(spawnTask==null){
+                        if(ResourceSpawnerCore.debug)System.out.println("No current spawn; "+structures.size()+"/"+limit);
                         if(limit==1||structures.size()<limit)startSpawn(plugin);
                     }
                 }
@@ -76,6 +79,7 @@ public class ResourceSpawner{
                     taskProcessor = new BukkitRunnable() {
                         @Override
                         public void run(){
+                            if(ResourceSpawnerCore.debug)System.out.println("Task processor started");
                             long startTime = System.nanoTime();
                             while(!task.isFinished()){
                                 task.step();
@@ -102,7 +106,7 @@ public class ResourceSpawner{
         }.runTaskTimer(plugin, 0, tickInterval);
     }
     private void startSpawn(ResourceSpawnerCore plugin){
-        if(ResourceSpawnerCore.debug)System.out.println("Attempting to spawn structure...");
+        if(ResourceSpawnerCore.debug)System.out.println("Preparing to spawn structure...");
         if(worldProviders.isEmpty()){
             if(ResourceSpawnerCore.debug)System.out.println("No world providers");
             return;
@@ -120,6 +124,8 @@ public class ResourceSpawner{
             return;
         }
         SpawnProvider spawnProvider = chooseWeighted(spawnProviders, rand);
+        if(ResourceSpawnerCore.debug)System.out.println("SpawnProvider: "+spawnProvider.getClass().getName());
+        if(ResourceSpawnerCore.debug)System.out.println("Creating spawn task...");
         spawnTask = new Task(){
             private ArrayList<Condition> conditions = new ArrayList<>(spawnProvider.conditions);
             private Task<Boolean> conditionTask = null;

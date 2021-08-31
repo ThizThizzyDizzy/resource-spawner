@@ -19,17 +19,22 @@ public class EntityProximityCondition implements Condition{
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
+        if(ResourceSpawnerCore.debug)System.out.println("Loading "+getClass().getName());
         radius = json.get("radius").asInt();//radius is required
+        if(ResourceSpawnerCore.debug)System.out.println("radius: "+radius);
         invert = json.getBoolean("invert", false);
+        if(ResourceSpawnerCore.debug)System.out.println("invert: "+invert);
         JsonValue ents = json.get("entities");
         if(ents!=null){
             for(JsonValue val : ents.asArray()){
                 entities.add(EntityType.valueOf(val.asString().toUpperCase(Locale.ROOT)));
             }
         }
+        if(ResourceSpawnerCore.debug)System.out.println("entities: "+entities.toString());
     }
     @Override
     public Task<Boolean> check(World world, Location location){
+        if(ResourceSpawnerCore.debug)System.out.println("Creating check task for "+getClass().getName());
         ArrayList<Entity> nearbyEntities;
         if(entities.isEmpty()){
             nearbyEntities = new ArrayList<>(world.getNearbyEntities(location, radius, radius, radius));

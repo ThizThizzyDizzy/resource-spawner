@@ -13,6 +13,7 @@ import com.thizthizzydizzy.resourcespawner.trigger.TriggerListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -33,8 +34,10 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
         name = json.getString("name", null);
+        if(ResourceSpawnerCore.debug)System.out.println("Loading Structure Spawn Provider "+name);
         if(name==null)throw new IllegalArgumentException("Name cannot be null!");
         String buildOrder = json.getString("build_order", null);
+        if(ResourceSpawnerCore.debug)System.out.println("Build order: "+buildOrder);
         if(buildOrder!=null){
             sorter = plugin.getStructureSorter(buildOrder);
             if(sorter==null)throw new IllegalArgumentException("Unknown structure sorter: "+buildOrder);
@@ -46,16 +49,20 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
                 replace.addAll(Vanillify.getBlocks(val.asString()));
             }
         }
+        if(ResourceSpawnerCore.debug)System.out.println("replace: "+Objects.toString(replace));
         JsonValue decay = json.get("decay");
         if(decay!=null){
+            if(ResourceSpawnerCore.debug)System.out.println("Loading decay settings");
             JsonObject decayObj = decay.asObject();
             shouldDecay = true;
             String decayOrder = decayObj.getString("decay_order", null);
+            if(ResourceSpawnerCore.debug)System.out.println("Decay order: "+decayOrder);
             if(decayOrder!=null){
                 decaySorter = plugin.getStructureSorter(decayOrder);
                 if(decaySorter==null)throw new IllegalArgumentException("Unknown structure sorter: "+decayOrder);
             }
             decayDelay = decayObj.getInt("delay", -1);
+            if(ResourceSpawnerCore.debug)System.out.println("delay: "+decayDelay);
             if(decayDelay==-1)throw new IllegalArgumentException("Decay delay must be provided!");
             if(ResourceSpawnerCore.debug)System.out.println("Loading reset triggers");
             JsonValue resetTriggersObj = decayObj.get("reset_triggers");
@@ -68,13 +75,16 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
                     if(trigger==null)throw new IllegalArgumentException("Unknown trigger: "+name);
                     trigger.loadFromConfig(plugin, obj);
                     int delay = obj.getInt("delay", -1);
+                    if(ResourceSpawnerCore.debug)System.out.println("delay: "+delay);
                     if(delay==-1)throw new IllegalArgumentException("Reset trigger delay must be provided!");
                     JsonValue conditionsJson = obj.get("conditions");
+                    if(ResourceSpawnerCore.debug)System.out.println("Loading conditions");
                     if(conditionsJson!=null){
                         for(JsonValue v : conditionsJson.asArray()){
                             if(v.isObject()){
                                 JsonObject conditionJson = v.asObject();
                                 String conditionType = conditionJson.getString("type", null);
+                                if(ResourceSpawnerCore.debug)System.out.println("Loading condition "+conditionType);
                                 Condition condition = plugin.getCondition(conditionType);
                                 if(condition==null)throw new IllegalArgumentException("Unknown condition: "+conditionType);
                                 condition.loadFromConfig(plugin, conditionJson);
@@ -86,14 +96,18 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
                 }
             }
             String decayToS = decayObj.getString("decay_to", null);
+            if(ResourceSpawnerCore.debug)System.out.println("Decay to: "+decayToS);
             if(decayToS!=null)decayTo = Material.matchMaterial(decayToS);
         }
+        if(ResourceSpawnerCore.debug)System.out.println("Loading structure");
         structure = load(plugin, json);
         structure.normalize();
+        if(ResourceSpawnerCore.debug)System.out.println("Structure loaded");
     }
     public abstract Structure load(ResourceSpawnerCore plugin, JsonObject json);
     @Override
     public Task<SpawnedStructure> spawn(ResourceSpawnerCore plugin, World world, Location location){
+        if(ResourceSpawnerCore.debug)System.out.println("Creating structure spawn task");
         return new Task<SpawnedStructure>(){
             private SpawnedStructure spawnedStructure = new SpawnedStructure(AbstractStructureSpawnProvider.this, world, location);
             private ArrayList<Location> data = sorter==null?new ArrayList<>(structure.data.keySet()):sorter.sort(structure.data.keySet());
@@ -110,6 +124,7 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
                     spawnedStructure.blocks.add(block);
                     return;
                 }
+                if(ResourceSpawnerCore.debug)System.out.println("Finished spawning structure, setting triggers");
                 spawnedStructure.decayTimer = decayDelay;
                 for(Trigger trigger : resetTriggers.keySet()){
                     TriggerListener triggerListener = () -> {
@@ -125,6 +140,7 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
                         trigger.addTriggerListener(triggerListener);
                     }
                 }
+                if(ResourceSpawnerCore.debug)System.out.println("Triggers are set");
                 finished = true;
             }
             @Override

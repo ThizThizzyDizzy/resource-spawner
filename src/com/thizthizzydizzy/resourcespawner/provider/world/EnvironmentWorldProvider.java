@@ -15,7 +15,9 @@ public class EnvironmentWorldProvider implements WorldProvider{
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
+        if(ResourceSpawnerCore.debug)System.out.println("Loading "+getClass().getName());
         environment = World.Environment.valueOf(json.getString("environment", "normal").toUpperCase(Locale.ROOT).replace("OVERWORLD", "NORMAL"));
+        if(ResourceSpawnerCore.debug)System.out.println("environment: "+environment.toString());
     }
     @Override
     public World get(Random rand){

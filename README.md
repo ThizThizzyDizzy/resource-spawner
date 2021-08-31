@@ -54,7 +54,7 @@ ResourceSpawner uses Hjson for its configuration to avoid the messiness of YAML,
 
 ```
 {
-    debug: false //this line is optional, but set it to true to enable a lot of console output for debugging
+    debug: false //this line is optional, but set it to true to enable an excessive amount of console output for debugging (This may slow down the plugin)
     resource_spawners: [
         {
             //a resource spawner

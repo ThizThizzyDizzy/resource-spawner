@@ -19,7 +19,9 @@ public class CubeFillCondition implements Condition{
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
+        if(ResourceSpawnerCore.debug)System.out.println("Loading "+getClass().getName());
         radius = json.getInt("radius", 0);//default only checks one block
+        if(ResourceSpawnerCore.debug)System.out.println("radius: "+radius);
         JsonValue value = json.get("blocks");
         if(value.isArray()){
             for(JsonValue val : value.asArray()){
@@ -29,18 +31,23 @@ public class CubeFillCondition implements Condition{
                 }else throw new IllegalArgumentException("Block must be a String! "+val.getClass().getName());
             }
         }else throw new IllegalArgumentException("blocks must be an array!");
+        if(ResourceSpawnerCore.debug)System.out.println("blocks: "+blocks.toString());
         JsonValue minValue = json.get("min");
         if(minValue!=null)min = minValue.asInt();
+        if(ResourceSpawnerCore.debug)System.out.println("min: "+min);
         JsonValue maxValue = json.get("max");
         if(maxValue!=null)max = maxValue.asInt();
+        if(ResourceSpawnerCore.debug)System.out.println("max: "+max);
         JsonValue minPercentValue = json.get("min_percent");
         if(minPercentValue!=null)minPercent = minPercentValue.asDouble()/100;
+        if(ResourceSpawnerCore.debug)System.out.println("min percent: "+minPercent);
         JsonValue maxPercentValue = json.get("max_percent");
         if(maxPercentValue!=null)maxPercent = maxPercentValue.asDouble()/100;
+        if(ResourceSpawnerCore.debug)System.out.println("max percent: "+maxPercent);
     }
     @Override
     public Task<Boolean> check(World world, Location location){
-        if(ResourceSpawnerCore.debug)System.out.println("CubeFill check");
+        if(ResourceSpawnerCore.debug)System.out.println("Creating check task for "+getClass().getName());
         int minX = location.getBlockX()-radius;
         int minY = Math.max(0, location.getBlockY()-radius);//TODO 1.17 min world height!
         int minZ = location.getBlockZ()-radius;

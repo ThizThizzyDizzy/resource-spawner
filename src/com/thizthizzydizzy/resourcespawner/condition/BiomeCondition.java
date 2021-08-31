@@ -17,7 +17,9 @@ public class BiomeCondition implements Condition{
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
+        if(ResourceSpawnerCore.debug)System.out.println("Loading "+getClass().getName());
         invert = json.getBoolean("invert", false);
+        if(ResourceSpawnerCore.debug)System.out.println("invert: "+invert);
         JsonValue value = json.get("biomes");
         if(value.isArray()){
             for(JsonValue val : value.asArray()){
@@ -26,9 +28,11 @@ public class BiomeCondition implements Condition{
                 }else throw new IllegalArgumentException("Block must be a String! "+val.getClass().getName());
             }
         }else throw new IllegalArgumentException("blocks must be an array!");
+        if(ResourceSpawnerCore.debug)System.out.println("biomes: "+biomes.toString());
     }
     @Override
     public Task<Boolean> check(World world, Location location){
+        if(ResourceSpawnerCore.debug)System.out.println("Creating check task for "+getClass().getName());
         return new Task<Boolean>() {
             Boolean result = null;
             @Override

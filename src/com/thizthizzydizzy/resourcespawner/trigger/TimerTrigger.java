@@ -10,12 +10,14 @@ public class TimerTrigger extends Trigger{
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject obj){
+        if(ResourceSpawnerCore.debug)System.out.println("Loading TimerTrigger");
         interval = obj.getInt("interval", -1);
+        if(ResourceSpawnerCore.debug)System.out.println("interval: "+interval);
         if(interval==-1)throw new IllegalArgumentException("Timer interval must be provided!");
         new BukkitRunnable() {
             @Override
             public void run(){
-                throw new UnsupportedOperationException("Not supported yet.");
+                trigger();
             }
         }.runTaskTimer(plugin, 0, interval);
     }

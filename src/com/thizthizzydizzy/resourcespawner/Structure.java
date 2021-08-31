@@ -8,6 +8,7 @@ public class Structure{
         data.put(new Location(null, x,y,z), block);
     }
     public void normalize(){
+        if(ResourceSpawnerCore.debug)System.out.println("Normalizing structure");
         if(data.isEmpty())return;
         HashMap<Location, BlockData> copy = new HashMap<>(data);
         int minX = Integer.MAX_VALUE;

@@ -18,14 +18,21 @@ public class SurfaceLocationProvider implements LocationProvider{
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
+        if(ResourceSpawnerCore.debug)System.out.println("Loading "+getClass().getName());
         originX = json.get("x").asInt();
+        if(ResourceSpawnerCore.debug)System.out.println("x: "+originX);
         originZ = json.get("z").asInt();
+        if(ResourceSpawnerCore.debug)System.out.println("z: "+originZ);
         yOffset = json.getInt("y_offset", 1);
+        if(ResourceSpawnerCore.debug)System.out.println("y offset: "+yOffset);
         radius = json.getInt("radius", 0);
+        if(ResourceSpawnerCore.debug)System.out.println("radius: "+radius);
         distribution = plugin.getDistribution(json.getString("distribution", "even"));
+        if(ResourceSpawnerCore.debug)System.out.println("distribution: "+distribution.getClass().getName());
     }
     @Override
     public Location get(World world, Random rand){
+        if(ResourceSpawnerCore.debug)System.out.println(getClass().getName()+" getting location...");
         int x = distribution.get(originX-radius, originX+radius, rand);
         int z = distribution.get(originZ-radius, originZ+radius, rand);
         Location loc = world.getHighestBlockAt(x, z).getLocation();

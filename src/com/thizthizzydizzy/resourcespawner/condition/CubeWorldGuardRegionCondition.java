@@ -22,17 +22,22 @@ public class CubeWorldGuardRegionCondition implements Condition{
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
+        if(ResourceSpawnerCore.debug)System.out.println("Loading "+getClass().getName());
         radius = json.getInt("radius", 0);//default only checks one block
+        if(ResourceSpawnerCore.debug)System.out.println("radius: "+radius);
         invert = json.getBoolean("invert", false);
+        if(ResourceSpawnerCore.debug)System.out.println("invert: "+invert);
         JsonValue rgs = json.get("regions");
         if(rgs!=null){
             for(JsonValue val : rgs.asArray()){
                 regions.add(val.asString());
             }
         }
+        if(ResourceSpawnerCore.debug)System.out.println("regions: "+regions.toString());
     }
     @Override
     public Task<Boolean> check(World world, Location location){
+        if(ResourceSpawnerCore.debug)System.out.println("Creating check task for "+getClass().getName());
         if(ResourceSpawnerCore.debug)System.out.println("WorldGuardRegion check");
         int minX = location.getBlockX()-radius;
         int minY = Math.max(0, location.getBlockY()-radius);//TODO 1.17 min world height!

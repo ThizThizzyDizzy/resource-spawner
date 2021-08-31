@@ -16,14 +16,17 @@ public class EntitySpawnProvider extends SpawnProvider{
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
+        if(ResourceSpawnerCore.debug)System.out.println("Loading "+getClass().getName());
         entity = EntityType.valueOf(json.get("entity").asString().toUpperCase(Locale.ROOT));
     }
     @Override
     public Task<Entity> spawn(ResourceSpawnerCore plugin, World world, Location location){
+        if(ResourceSpawnerCore.debug)System.out.println("Creating entity spawn task");
         return new Task<Entity>() {
             private Entity result;
             @Override
             public void step(){
+                if(ResourceSpawnerCore.debug)System.out.println("Spawning entity");
                 result = world.spawnEntity(location, entity);
             }
             @Override

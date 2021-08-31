@@ -76,6 +76,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
             getLogger().log(Level.WARNING, "World provider {0} already exists! Skipping...", key.toString());
             return false;
         }
+        if(debug)getLogger().log(Level.INFO, "Registered World Provider {0} as {1}", new Object[]{key, provider.getClass().getName()});
         worldProviders.put(key, provider);
         return true;
     }
@@ -93,6 +94,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
             return false;
         }
         locationProviders.put(key, provider);
+        if(debug)getLogger().log(Level.INFO, "Registered Location Provider {0} as {1}", new Object[]{key, provider.getClass().getName()});
         return true;
     }
     /**
@@ -109,6 +111,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
             return false;
         }
         spawnProviders.put(key, provider);
+        if(debug)getLogger().log(Level.INFO, "Registered Spawn Provider {0} as {1}", new Object[]{key, provider.getClass().getName()});
         return true;
     }
     /**
@@ -125,6 +128,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
             return false;
         }
         conditions.put(key, condition);
+        if(debug)getLogger().log(Level.INFO, "Registered Condition {0} as {1}", new Object[]{key, condition.getClass().getName()});
         return true;
     }
     /**
@@ -141,6 +145,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
             return false;
         }
         structureSorters.put(key, sorter);
+        if(debug)getLogger().log(Level.INFO, "Registered Structure Sorter {0} as {1}", new Object[]{key, sorter.getClass().getName()});
         return true;
     }
     /**
@@ -157,6 +162,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
             return false;
         }
         triggers.put(key, trigger);
+        if(debug)getLogger().log(Level.INFO, "Registered Trigger {0} as {1}", new Object[]{key, trigger.getClass().getName()});
         return true;
     }
     /**
@@ -173,18 +179,27 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
             return false;
         }
         distributions.put(key, distribution);
+        if(debug)getLogger().log(Level.INFO, "Registered Distribution {0} as {1}", new Object[]{key, distribution.getClass().getName()});
         return true;
     }
     @Override
     public void onEnable(){
+        if(debug)getLogger().log(Level.INFO, "Starting up...");
         PluginManager pm = getServer().getPluginManager();
         PluginDescriptionFile pdfFile = getDescription();
+        if(debug)getLogger().log(Level.INFO, "Registering self-initialization event");
         pm.registerEvents(this, this);
+        if(debug)getLogger().log(Level.INFO, "Calling initializiation event");
         Bukkit.getServer().getPluginManager().callEvent(new ResourceSpawnerInitilizationEvent(this));
+        if(debug)getLogger().log(Level.INFO, "Initialization complete. Loading config...");
         File configFile = new File(getDataFolder(), "config.hjson");
-        if(!getDataFolder().exists())getDataFolder().mkdirs();
+        if(!getDataFolder().exists()){
+            getDataFolder().mkdirs();
+            if(debug)getLogger().log(Level.INFO, "Generating data folder");
+        }
         if(!configFile.exists()){
             try{
+                if(debug)getLogger().log(Level.INFO, "Generating empty configuration file");
                 configFile.createNewFile();
                 try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(configFile)))){
                     writer.write("{\n" +
@@ -198,18 +213,22 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
             }
         }
         try{
+            if(debug)getLogger().log(Level.INFO, "Reading config...");
             JsonObject json = JsonValue.readHjson(new InputStreamReader(new FileInputStream(configFile))).asObject();
             debug = json.getBoolean("debug", false);
+            if(debug)getLogger().log(Level.INFO, "Reading resource spawners...");
             JsonArray spawners = json.get("resource_spawners").asArray();
             for(JsonValue value : spawners){
                 if(value.isObject()){
                     JsonObject spawner = value.asObject();
                     String name = spawner.getString("name", null);
+                    if(debug)getLogger().log(Level.INFO, "Reading resource spawner {0}", name);
                     if(name==null)throw new IllegalArgumentException("Spawner name cannot be null!");
                     for(ResourceSpawner rs : resourceSpawners){
                         if(rs.name.equals(name))throw new IllegalArgumentException("Resource spawner "+name+" already exists! Each resource spawner must have a unique name");
                     }
                     ResourceSpawner resourceSpawner = new ResourceSpawner(name);
+                    if(debug)getLogger().log(Level.INFO, "Reading world providers...");
                     JsonValue world_providers = spawner.get("world_providers");
                     if(world_providers==null)getLogger().log(Level.WARNING, "Resource spawner {0} does not have any world providers!", name);
                     else{
@@ -217,14 +236,17 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                             if(val.isObject()){
                                 JsonObject worldProvider = val.asObject();
                                 String type = worldProvider.getString("type", null);
+                                if(debug)getLogger().log(Level.INFO, "Reading world provider: {0}", type);
                                 WorldProvider provider = getWorldProvider(type);
                                 if(provider==null)throw new IllegalArgumentException("Unknown world provider: "+type);
                                 provider.loadFromConfig(this, worldProvider);
                                 int weight = worldProvider.getInt("weight", 1);
+                                if(debug)getLogger().log(Level.INFO, "Weight: {0}", weight);
                                 resourceSpawner.worldProviders.put(provider, weight);
                             }else throw new IllegalArgumentException("Invalid world provider: "+val.getType().getClass().getName());
                         }
                     }
+                    if(debug)getLogger().log(Level.INFO, "Reading location providers");
                     JsonValue location_providers = spawner.get("location_providers");
                     if(location_providers==null)getLogger().log(Level.WARNING, "Resource spawner {0} does not have any location providers!", name);
                     else{
@@ -232,14 +254,17 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                             if(val.isObject()){
                                 JsonObject locationProvider = val.asObject();
                                 String type = locationProvider.getString("type", null);
+                                if(debug)getLogger().log(Level.INFO, "Reading location provider {0}", type);
                                 LocationProvider provider = getLocationProvider(type);
                                 if(provider==null)throw new IllegalArgumentException("Unknown location provider: "+type);
                                 provider.loadFromConfig(this, locationProvider);
                                 int weight = locationProvider.getInt("weight", 1);
+                                if(debug)getLogger().log(Level.INFO, "Weight: {0}", weight);
                                 resourceSpawner.locationProviders.put(provider, weight);
                             }else throw new IllegalArgumentException("Invalid location provider: "+val.getType().getClass().getName());
                         }
                     }
+                    if(debug)getLogger().log(Level.INFO, "Reading spawn providers");
                     JsonValue spawns = spawner.get("spawn_providers");
                     if(spawns==null)getLogger().log(Level.WARNING, "Resource spawner {0} does not have any spawn providers!", name);
                     else{
@@ -247,16 +272,20 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                             if(val.isObject()){
                                 JsonObject spawn = val.asObject();
                                 String type = spawn.getString("type", null);
+                                if(debug)getLogger().log(Level.INFO, "Reading spawn provider {0}", type);
                                 SpawnProvider provider = getSpawnProvider(type);
                                 if(provider==null)throw new IllegalArgumentException("Unknown spawn provider: "+type);
                                 provider.loadFromConfig(this, spawn);
                                 int weight = spawn.getInt("weight", 1);
+                                if(debug)getLogger().log(Level.INFO, "Weight: {0}", weight);
+                                if(debug)getLogger().log(Level.INFO, "Reading conditions");
                                 JsonValue conditionsJson = spawn.get("conditions");
                                 if(conditionsJson!=null){
                                     for(JsonValue v : conditionsJson.asArray()){
                                         if(v.isObject()){
                                             JsonObject conditionJson = v.asObject();
                                             String conditionType = conditionJson.getString("type", null);
+                                            if(debug)getLogger().log(Level.INFO, "Reading condition {0}", conditionType);
                                             Condition condition = getCondition(conditionType);
                                             if(condition==null)throw new IllegalArgumentException("Unknown condition: "+conditionType);
                                             condition.loadFromConfig(this, conditionJson);
@@ -269,26 +298,35 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                         }
                     }
                     resourceSpawner.limit = spawner.getInt("limit", resourceSpawner.limit);
+                    if(debug)getLogger().log(Level.INFO, "Limit: {0}", resourceSpawner.limit);
                     resourceSpawner.spawnDelay = spawner.getInt("spawn_delay", resourceSpawner.spawnDelay);
+                    if(debug)getLogger().log(Level.INFO, "Spawn Delay: {0}", resourceSpawner.spawnDelay);
                     resourceSpawner.tickInterval = spawner.getInt("tick_interval", resourceSpawner.tickInterval);
+                    if(debug)getLogger().log(Level.INFO, "Tick Interval: {0}", resourceSpawner.tickInterval);
                     resourceSpawner.maxTickTime = spawner.getLong("max_tick_time", resourceSpawner.maxTickTime);
+                    if(debug)getLogger().log(Level.INFO, "Max Tick Time: {0}", resourceSpawner.maxTickTime);
                     resourceSpawners.add(resourceSpawner);
                 }else throw new IllegalArgumentException("Invalid resource spawner: "+value.getType().getClass().getName());
             }
         }catch(IOException | UnsupportedOperationException ex){
             throw new RuntimeException("Failed to load configuration file", ex);
         }
+        if(debug)getLogger().log(Level.INFO, "Loading data...");
         load();
-        if(ResourceSpawnerCore.debug)System.out.println("Initializing "+resourceSpawners.size()+" spawners...");
+        if(debug)getLogger().log(Level.INFO, "Loaded!");
+        if(debug)System.out.println("Initializing "+resourceSpawners.size()+" spawners...");
         for(ResourceSpawner spawner : resourceSpawners){
+            if(debug)getLogger().log(Level.INFO, "Initializing spawner {0}", spawner.name);
             spawner.init(this);
         }
+        if(debug)getLogger().log(Level.INFO, "Startup complete!");
         getLogger().log(Level.INFO, "{0} has been enabled! (Version {1}) by ThizThizzyDizzy", new Object[]{pdfFile.getName(), pdfFile.getVersion()});
     }
     @Override
     public void onDisable(){
         PluginDescriptionFile pdfFile = getDescription();
         save();
+        if(debug)getLogger().log(Level.INFO, "Shutting down");
         getLogger().log(Level.INFO, "{0} has been disabled! (Version {1}) by ThizThizzyDizzy", new Object[]{pdfFile.getName(), pdfFile.getVersion()});
     }
     @EventHandler
@@ -320,9 +358,11 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
     }
     @EventHandler
     public void onSave(WorldSaveEvent event){
+        
         save();
     }
     public void save(){
+        if(debug)getLogger().log(Level.INFO, "Saving...");
         JsonObject json = new JsonObject();
         JsonArray spawners = new JsonArray();
         json.set("spawners", spawners);
@@ -350,6 +390,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         File realFile = new File(getDataFolder(), "data_do_not_touch.json");
         if(realFile.exists())realFile.delete();
         temp.renameTo(realFile);
+        if(debug)getLogger().log(Level.INFO, "Saved!");
     }
     private void load(){
         File file = new File(getDataFolder(), "data_do_not_touch.json");

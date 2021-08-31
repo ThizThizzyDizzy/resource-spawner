@@ -9,6 +9,7 @@ public abstract class Trigger{
     public abstract Trigger newInstance();
     public abstract void loadFromConfig(ResourceSpawnerCore plugin, JsonObject obj);
     public void trigger(){
+        if(ResourceSpawnerCore.debug)System.out.println("Trigger triggered: "+getClass().getName());
         for(TriggerListener listener : listeners)listener.trigger();
     }
     public void addTriggerListener(TriggerListener listener){
