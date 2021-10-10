@@ -21,17 +21,19 @@ public class SpawnedStructure{
     public int decayTimer = Integer.MIN_VALUE;//min value does not decay
     public Task decayTask;
     public HashMap<Trigger, TriggerListener> triggerListeners = new HashMap<>();
-    public SpawnedStructure(AbstractStructureSpawnProvider spawnProvider, World world, Location pos){
+    private final int rotation;
+    public SpawnedStructure(AbstractStructureSpawnProvider spawnProvider, World world, Location pos, int rotation){
         this.spawnProvider = spawnProvider;
         this.world = world;
         this.pos = pos;
+        this.rotation = rotation;
     }
     public Task<SpawnedStructure> decay(){
         if(ResourceSpawnerCore.debug)System.out.println("Preparing decay task");
         HashMap<Location, Block> data = new HashMap<>();
         for(Block b : blocks){
             Location offset = new Location(null, b.getX()-pos.getBlockX(), b.getY()-pos.getBlockY(), b.getZ()-pos.getBlockZ());
-            BlockData shouldBe = spawnProvider.structure.data.get(offset);
+            BlockData shouldBe = spawnProvider.getStructure(rotation).data.get(offset);
             if(b.getType()!=shouldBe.getMaterial())continue;//not the same block; SKIP!
             data.put(offset, b);
         }
@@ -77,6 +79,7 @@ public class SpawnedStructure{
     public static SpawnedStructure load(ResourceSpawnerCore plugin, JsonObject json){
         World world = plugin.getServer().getWorld(UUID.fromString(json.get("world").asString()));
         Location pos = new Location(world, json.get("x").asInt(), json.get("y").asInt(), json.get("z").asInt());
+        int rotation = json.getInt("rotation", 0);
         String spawn_provider = json.get("spawn_provider").asString();
         AbstractStructureSpawnProvider spawnProvider = null;
         for(ResourceSpawner s : plugin.resourceSpawners){
@@ -89,9 +92,9 @@ public class SpawnedStructure{
         if(spawnProvider==null){
             plugin.getLogger().log(Level.WARNING, "Failed to load spawned structure: unknown spawn provider {0}! Structure position: ({1},{2},{3}) in world {4}", new Object[]{spawn_provider, pos.getBlockX(), pos.getBlockY(), pos.getBlockZ(), world.getName()});
         }
-        SpawnedStructure spawnedStructure = new SpawnedStructure(spawnProvider, world, pos);
+        SpawnedStructure spawnedStructure = new SpawnedStructure(spawnProvider, world, pos, rotation);
         spawnedStructure.decayTimer = json.get("decay_timer").asInt();
-        for(Location l : spawnedStructure.spawnProvider.structure.data.keySet()){
+        for(Location l : spawnedStructure.spawnProvider.getStructure(rotation).data.keySet()){
             spawnedStructure.blocks.add(world.getBlockAt(pos.getBlockX()+l.getBlockX(), pos.getBlockY()+l.getBlockY(), pos.getBlockZ()+l.getBlockZ()));
         }
         AbstractStructureSpawnProvider spawnProviderButEffectivelyFinal = spawnProvider;

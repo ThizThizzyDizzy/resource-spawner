@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -28,9 +29,12 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
     public boolean shouldDecay = false;
     public StructureSorter decaySorter;//can be null
     public int decayDelay;
-    public Structure structure;
+    private Structure structure;
     public Material decayTo = Material.AIR;
     public String name;
+    private int rotation = 0;//0 1 2 3
+    private boolean randomRotation = false;
+    private final Random rand = new Random();
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
         name = json.getString("name", null);
@@ -41,6 +45,23 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
         if(buildOrder!=null){
             sorter = plugin.getStructureSorter(buildOrder);
             if(sorter==null)throw new IllegalArgumentException("Unknown structure sorter: "+buildOrder);
+        }
+        JsonValue rotation = json.get("rotation");
+        if(rotation!=null){
+            if(rotation.isNumber()){
+                int rot = rotation.asInt();
+                if(rot%90!=0)throw new IllegalArgumentException("Rotation must be a multiple of 90!");
+                rot/=90;
+                while(rot<0)rot+=4;
+                while(rot>=4)rot-=4;
+                this.rotation = rot;
+            }else if(rotation.isString()){
+                if(rotation.asString().equalsIgnoreCase("random")){
+                    randomRotation = true;
+                }else throw new IllegalArgumentException("Invalid string rotation! expected 'random'");
+            }else{
+                throw new IllegalArgumentException("Rotation is invalid type! Expected number or string, found "+rotation.getType().toString());
+            }
         }
         JsonValue repl = json.get("replace");
         if(repl!=null){
@@ -108,8 +129,10 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
     @Override
     public Task<SpawnedStructure> spawn(ResourceSpawnerCore plugin, World world, Location location){
         if(ResourceSpawnerCore.debug)System.out.println("Creating structure spawn task");
+        int chosenRotation = randomRotation?rand.nextInt(4):rotation;
+        Structure structure = getStructure(chosenRotation);
         return new Task<SpawnedStructure>(){
-            private SpawnedStructure spawnedStructure = new SpawnedStructure(AbstractStructureSpawnProvider.this, world, location);
+            private SpawnedStructure spawnedStructure = new SpawnedStructure(AbstractStructureSpawnProvider.this, world, location, chosenRotation);
             private ArrayList<Location> data = sorter==null?new ArrayList<>(structure.data.keySet()):sorter.sort(structure.data.keySet());
             private boolean finished = false;
             @Override
@@ -152,5 +175,8 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
                 return spawnedStructure;
             }
         };
+    }
+    public Structure getStructure(int rotation){
+        return structure.getRotated(rotation);
     }
 }

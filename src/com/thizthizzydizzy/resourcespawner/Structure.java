@@ -35,4 +35,34 @@ public class Structure{
             data.put(new Location(null, pos.getBlockX()+xOff, pos.getBlockY()+yOff, pos.getBlockZ()+zOff), copy.get(pos));
         }
     }
+    private Structure[] rotationCache = new Structure[4];
+    /**
+     * Gets a rotated version of this structure. Results may be unpredictable if the structure is not normalized first.
+     * @param rot the number of clockwize 90 degree turns to make (0-3)
+     * @return a cached or new Structure representing the rotated structure
+     */
+    public Structure getRotated(int rot){
+        if(rotationCache[rot]!=null)return rotationCache[rot];
+        switch(rot){
+            case 0:
+                return rotationCache[0] = this;
+            case 1:
+                return rotationCache[1] = rotate();
+            case 2:
+                return rotationCache[2] = rotate().rotate();
+            case 3:
+                return rotationCache[3] = rotate().rotate().rotate();
+            default:
+                throw new IllegalArgumentException("Invalid structure rotation: "+rot+" (expected 0-3)");
+        }
+    }
+    private Structure rotate(){
+        Structure rotated = new Structure();
+        for(Location key : data.keySet()){
+            Location rotatedKey = new Location(key.getWorld(), -key.getZ(), key.getY(), key.getX());
+            rotated.data.put(rotatedKey, data.get(key));
+        }
+        rotated.normalize();
+        return rotated;
+    }
 }
