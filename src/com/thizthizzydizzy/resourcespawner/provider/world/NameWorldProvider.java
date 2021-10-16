@@ -35,8 +35,9 @@ public class NameWorldProvider implements WorldProvider{
         ArrayList<World> chosenWorlds = new ArrayList<>();
         for(World world : Bukkit.getWorlds()){
             boolean has = worlds.contains(world.getName());
-            if(blacklist)if(!has)chosenWorlds.add(world);
-            else if(has)chosenWorlds.add(world);
+            if(blacklist){
+                if(!has)chosenWorlds.add(world);
+            }else if(has)chosenWorlds.add(world);
         }
         return chosenWorlds.get(rand.nextInt(chosenWorlds.size()));
     }
