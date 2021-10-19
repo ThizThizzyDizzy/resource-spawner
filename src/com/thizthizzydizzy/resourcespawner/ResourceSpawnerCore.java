@@ -23,6 +23,9 @@ import com.thizthizzydizzy.resourcespawner.provider.spawn.WorldEditSchematicSpaw
 import com.thizthizzydizzy.resourcespawner.provider.world.EnvironmentWorldProvider;
 import com.thizthizzydizzy.resourcespawner.provider.world.NameWorldProvider;
 import com.thizthizzydizzy.resourcespawner.provider.world.UUIDWorldProvider;
+import com.thizthizzydizzy.resourcespawner.scanner.CoordinateStructureScanner;
+import com.thizthizzydizzy.resourcespawner.scanner.DirectionStructureScanner;
+import com.thizthizzydizzy.resourcespawner.scanner.Scanner;
 import com.thizthizzydizzy.resourcespawner.sorter.CenterStructureSorter;
 import com.thizthizzydizzy.resourcespawner.sorter.InvertedCenterStructureSorter;
 import com.thizthizzydizzy.resourcespawner.sorter.RandomStructureSorter;
@@ -30,6 +33,7 @@ import com.thizthizzydizzy.resourcespawner.sorter.StructureSorter;
 import com.thizthizzydizzy.resourcespawner.trigger.BlockBreakTrigger;
 import com.thizthizzydizzy.resourcespawner.trigger.TimerTrigger;
 import com.thizthizzydizzy.resourcespawner.trigger.Trigger;
+import com.thizthizzydizzy.resourcespawner.trigger.TriggerHandler;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,11 +49,13 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldSaveEvent;
+import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
+import org.hjson.JsonObject.Member;
 import org.hjson.JsonValue;
 import org.hjson.Stringify;
 public class ResourceSpawnerCore extends JavaPlugin implements Listener{
@@ -62,6 +68,8 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
     public final HashMap<NamespacedKey, StructureSorter> structureSorters = new HashMap<>();
     public final HashMap<NamespacedKey, Trigger> triggers = new HashMap<>();
     public final HashMap<NamespacedKey, Distribution> distributions = new HashMap<>();
+    public final HashMap<NamespacedKey, Scanner> scanners = new HashMap<>();
+    public final ArrayList<Scanner> activeScanners = new ArrayList<>();
     public static boolean debug = false;
     /**
      * Register a new world provider
@@ -182,6 +190,23 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         if(debug)getLogger().log(Level.INFO, "Registered Distribution {0} as {1}", new Object[]{key, distribution.getClass().getName()});
         return true;
     }
+    /**
+     * Register a new random scanner
+     * @param key the scanner's unique key
+     * @param scanner the scanner to register
+     * @return true if the scanner is successfully registered, false otherwise
+     * @throws IllegalArgumentException if key is null
+     */
+    public boolean registerScanner(NamespacedKey key, Scanner scanner) throws IllegalArgumentException{
+        if(key==null)throw new IllegalArgumentException("Key must not be null!");
+        if(scanners.containsKey(key)){
+            getLogger().log(Level.WARNING, "Scanner {0} already exists! Skipping...", key.toString());
+            return false;
+        }
+        scanners.put(key, scanner);
+        if(debug)getLogger().log(Level.INFO, "Registered Scanner {0} as {1}", new Object[]{key, scanner.getClass().getName()});
+        return true;
+    }
     @Override
     public void onEnable(){
         if(debug)getLogger().log(Level.INFO, "Starting up...");
@@ -204,6 +229,8 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                 try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(configFile)))){
                     writer.write("{\n" +
                                  "    debug: false\n" +
+                                 "    structure_scanners: [\n" +
+                                 "    ]\n" +
                                  "    resource_spawners: [\n" +
                                  "    ]\n" +
                                  "}");
@@ -216,6 +243,35 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
             if(debug)getLogger().log(Level.INFO, "Reading config...");
             JsonObject json = JsonValue.readHjson(new InputStreamReader(new FileInputStream(configFile))).asObject();
             debug = json.getBoolean("debug", false);
+            if(debug)getLogger().log(Level.INFO, "Reading scanners...");
+            JsonValue scannersVal = json.get("scanners");
+            if(scannersVal!=null){
+                JsonArray scanners = scannersVal.asArray();
+                for(JsonValue value : scanners){
+                    if(value.isObject()){
+                        JsonObject scanner = value.asObject();
+                        String type = scanner.getString("type", null);
+                        if(debug)getLogger().log(Level.INFO, "Reading scanner: {0}", type);
+                        Scanner scan = getScanner(type);
+                        if(scan==null)throw new IllegalArgumentException("Unknown scanner: "+type);
+                        scan.loadFromConfig(this, scanner);
+                        scan.minRange = scanner.getInt("min_range", 0);
+                        if(debug)getLogger().log(Level.INFO, "Min range: {0}", scan.minRange);
+                        scan.maxRange = scanner.getInt("max_range", Integer.MAX_VALUE);
+                        if(debug)getLogger().log(Level.INFO, "Max range: {0}", scan.maxRange);
+                        scan.maxResults = scanner.getInt("max_results", 64);
+                        if(debug)getLogger().log(Level.INFO, "Max results: {0}", scan.maxResults);
+                        JsonValue displayNamesValue = scanner.get("display_names");
+                        if(displayNamesValue!=null){
+                            JsonObject displayNames = displayNamesValue.asObject();
+                            for(Member m : displayNames){
+                                scan.displayNameOverrides.put(m.getName(), m.getValue().asString());
+                            }
+                        }
+                        activeScanners.add(scan);
+                    }else throw new IllegalArgumentException("Invalid scanner: "+value.getType().getClass().getName());
+                }
+            }
             if(debug)getLogger().log(Level.INFO, "Reading resource spawners...");
             JsonArray spawners = json.get("resource_spawners").asArray();
             for(JsonValue value : spawners){
@@ -293,6 +349,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                                         }else throw new IllegalArgumentException("Invalid condition: "+v.getType().getClass().getName());
                                     }
                                 }
+                                provider.resourceSpawner = resourceSpawner;
                                 resourceSpawner.spawnProviders.put(provider, weight);
                             }else throw new IllegalArgumentException("Invalid spawn provider: "+val.getType().getClass().getName());
                         }
@@ -319,6 +376,12 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
             if(debug)getLogger().log(Level.INFO, "Initializing spawner {0}", spawner.name);
             spawner.init(this);
         }
+        if(debug)getLogger().log(Level.INFO, "Registering permissions");
+        pm.addPermission(new Permission("resourcespawner.help"));
+        pm.addPermission(new Permission("resourcespawner.debug"));
+        pm.addPermission(new Permission("resourcespawner.scan"));
+        if(debug)getLogger().log(Level.INFO, "Registering commands");
+        getCommand("resourcespawner").setExecutor(new CommandResourceSpawner(this));
         if(debug)getLogger().log(Level.INFO, "Startup complete!");
         getLogger().log(Level.INFO, "{0} has been enabled! (Version {1}) by ThizThizzyDizzy", new Object[]{pdfFile.getName(), pdfFile.getVersion()});
     }
@@ -351,10 +414,12 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         event.registerStructureSorter(new NamespacedKey(this, "from_center"), new CenterStructureSorter());
         event.registerStructureSorter(new NamespacedKey(this, "to_center"), new InvertedCenterStructureSorter());
         event.registerStructureSorter(new NamespacedKey(this, "random"), new RandomStructureSorter());
-        event.registerTrigger(new NamespacedKey(this, "block_broken"), new BlockBreakTrigger());
-        event.registerTrigger(new NamespacedKey(this, "timer"), new TimerTrigger());
+        event.registerTrigger(new NamespacedKey(this, "block_broken"), new BlockBreakTrigger(null));
+        event.registerTrigger(new NamespacedKey(this, "timer"), new TimerTrigger(null));
         event.registerDistribution(new NamespacedKey(this, "even"), new EvenDistribution());
         event.registerDistribution(new NamespacedKey(this, "gaussian"), new GaussianDistribution());
+        event.registerScanner(new NamespacedKey(this, "coordinate"), new CoordinateStructureScanner());
+        event.registerScanner(new NamespacedKey(this, "direction"), new DirectionStructureScanner());
     }
     @EventHandler
     public void onSave(WorldSaveEvent event){
@@ -449,10 +514,10 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         }
         return null;
     }
-    public Trigger getTrigger(String key){
+    public Trigger getTrigger(String key, TriggerHandler handler){
         if(!key.contains(":"))key = defaultNamespace+":"+key;
         for(NamespacedKey k : triggers.keySet()){
-            if(k.toString().equals(key))return triggers.get(k).newInstance();
+            if(k.toString().equals(key))return triggers.get(k).newInstance(handler);
         }
         return null;
     }
@@ -460,6 +525,13 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         if(!key.contains(":"))key = defaultNamespace+":"+key;
         for(NamespacedKey k : distributions.keySet()){
             if(k.toString().equals(key))return distributions.get(k);
+        }
+        return null;
+    }
+    public Scanner getScanner(String key){
+        if(!key.contains(":"))key = defaultNamespace+":"+key;
+        for(NamespacedKey k : scanners.keySet()){
+            if(k.toString().equals(key))return scanners.get(k);
         }
         return null;
     }

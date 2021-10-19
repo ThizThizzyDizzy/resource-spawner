@@ -4,9 +4,12 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.hjson.JsonObject;
 public class TimerTrigger extends Trigger{
     private int interval;
+    public TimerTrigger(TriggerHandler handler){
+        super(handler);
+    }
     @Override
-    public Trigger newInstance(){
-        return new TimerTrigger();
+    public Trigger newInstance(TriggerHandler handler){
+        return new TimerTrigger(handler);
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject obj){

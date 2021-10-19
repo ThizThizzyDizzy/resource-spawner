@@ -92,7 +92,7 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
                     JsonObject obj = value.asObject();
                     String name = obj.getString("trigger", null);
                     if(ResourceSpawnerCore.debug)System.out.println("Loading reset trigger "+name);
-                    Trigger trigger = plugin.getTrigger(name);
+                    Trigger trigger = plugin.getTrigger(name, resourceSpawner);
                     if(trigger==null)throw new IllegalArgumentException("Unknown trigger: "+name);
                     trigger.loadFromConfig(plugin, obj);
                     int delay = obj.getInt("delay", -1);
@@ -150,12 +150,23 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
                 if(ResourceSpawnerCore.debug)System.out.println("Finished spawning structure, setting triggers");
                 spawnedStructure.decayTimer = decayDelay;
                 for(Trigger trigger : resetTriggers.keySet()){
-                    TriggerListener triggerListener = () -> {
-                        spawnedStructure.decayTimer = Math.max(spawnedStructure.decayTimer, resetTriggers.get(trigger));
+                    TriggerListener triggerListener = new TriggerListener(){
+                        @Override
+                        public void trigger(){
+                            spawnedStructure.decayTimer = Math.max(spawnedStructure.decayTimer, resetTriggers.get(trigger));
+                        }
+                        @Override
+                        public World getWorld(){
+                            return world;
+                        }
+                        @Override
+                        public Location getLocation(){
+                            return location;
+                        }
                     };
                     if(trigger instanceof StructureTrigger){
                         //make a unique instance for this structure
-                        StructureTrigger st = ((StructureTrigger)trigger).newInstance(plugin, spawnedStructure);
+                        StructureTrigger st = ((StructureTrigger)trigger).newInstance(plugin, spawnedStructure, resourceSpawner);
                         spawnedStructure.triggerListeners.put(st, triggerListener);
                         st.addTriggerListener(triggerListener);
                     }else{

@@ -99,12 +99,23 @@ public class SpawnedStructure{
         }
         AbstractStructureSpawnProvider spawnProviderButEffectivelyFinal = spawnProvider;
         for(Trigger trigger : spawnProvider.resetTriggers.keySet()){
-            TriggerListener triggerListener = () -> {
-                spawnedStructure.decayTimer = Math.max(spawnedStructure.decayTimer, spawnProviderButEffectivelyFinal.resetTriggers.get(trigger));
+            TriggerListener triggerListener = new TriggerListener(){
+                @Override
+                public void trigger(){
+                    spawnedStructure.decayTimer = Math.max(spawnedStructure.decayTimer, spawnProviderButEffectivelyFinal.resetTriggers.get(trigger));
+                }
+                @Override
+                public World getWorld(){
+                    return world;
+                }
+                @Override
+                public Location getLocation(){
+                    return pos;
+                }
             };
             if(trigger instanceof StructureTrigger){
                 //make a unique instance for this structure
-                StructureTrigger st = ((StructureTrigger)trigger).newInstance(plugin, spawnedStructure);
+                StructureTrigger st = ((StructureTrigger)trigger).newInstance(plugin, spawnedStructure, spawnProvider.resourceSpawner);
                 spawnedStructure.triggerListeners.put(st, triggerListener);
                 st.addTriggerListener(triggerListener);
             }else{
@@ -113,5 +124,14 @@ public class SpawnedStructure{
             }
         }
         return spawnedStructure;
+    }
+    public World getWorld(){
+        return world;
+    }
+    public Location getLocation(){
+        return pos;
+    }
+    public String getName(){
+        return spawnProvider.name;
     }
 }

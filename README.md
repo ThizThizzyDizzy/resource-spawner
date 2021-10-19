@@ -71,6 +71,123 @@ For the formats of Resource Spawners and everything else, see the **Features Lis
 ## Features List
 Here is a comprehensive list of everything ResourceSpawner has to offer.
 All settings are Optional unless otherwise specified
+
+### Scanners
+Scanners scan a large area around the player to find resource nodes with /resourcespawner scan
+All scanners are run in order.
+
+The included scanners will only find spawned Structures
+<details>
+<summary><b>Settings common to all scanners</b></summary>
+
+String **`type` (Required)**
+
+Which scanner this is; should be a [namespaced ID](https://minecraft.fandom.com/wiki/Resource_location)
+
+If no namespace is provided, a default of `resourcespawner` will be assumed
+
+int **`min_range`** (Default 0)
+
+The minimum range at which this will detect resources
+
+int **`max_range`** (Default 2147483647)
+
+The maximum range at which this will detect resources
+
+int **`max_results`** (Default 64)
+
+The maximum number of scan results that will be listed.
+
+Object **`display_names`**
+
+A map of display names to show. values must be Strings
+</details>
+
+#### List of scanners
+
+<details>
+<summary><b>Coordinate</b></summary>
+
+id: `resourcespawner:coordinate`
+
+Lists the exact coordinates of spawned structures in range.
+
+*This scanner has no settings*
+
+##### Example
+
+```
+{
+    //namespace not required for built-in stuff
+    type: coordinate
+    //list all structures within 1km
+    min_range: 0
+    max_range: 1000
+    //only list 10 structures to avoid spamming the chat
+    max_results: 10
+    //set user friendly display names
+    display_names: {
+        iron_rock: Iron Ore Rock
+    }
+}
+```
+</details>
+<details>
+<summary><b>Direction</b></summary>
+
+id: `resourcespawner:direction`
+
+Lists the direction and/or distance to each spawned structure in range.
+
+##### Settings
+
+boolean **`show_distance`** (Default false)
+
+If true, this will show the distance to the resource node.
+
+boolean **`use_distance_prefixes`** (Default true)
+
+If true, large distances such as 10000m will be shortened to 10km
+
+boolean **`show_direction`** (Default false)
+
+If true, this will show which direction the structure is in (N/E/S/W/UP/DOWN)
+
+boolean **`use_intercardinals`** (Default true)
+
+If true, `show_direction` will also use intercardinals (NW/NE/SE/SW)
+
+boolean **`use_secondary_intercardinals`** (Default false)
+
+If true, `show_direction` will also use secondary intercardinals (NNW/NNE/ENE/ESE/SSE/SSW/WSW/WNW)
+
+##### Example
+
+```
+{
+    //namespace not required for built-in stuff
+    type: direction
+    //list all structures within 1km-5km
+    min_range: 1000
+    max_range: 5000
+    //list 10 structures to avoid spamming the chat
+    max_results: 10
+    //set friendly display names
+    display_names: {
+        iron_rock: Iron Ore Rock
+        oak: Oak Tree
+    }
+    //show the distance to the structures
+    show_distance: true
+    use_distance_prefixes: true
+    //show the direction without secondary intercardinals
+    show_direction: true
+    use_intercardinals: true
+    use_secondary_intercardinals: false
+}
+```
+</details>
+
 ### Resource Spawners
 <details>
 <summary><b>Settings</b></summary>
@@ -136,10 +253,14 @@ The maximum time, in nanoseconds, this resource spawner may spend on a task in o
             //a spawn provider
         }
     ]
-    limit: 10 //maximum of 10 structures
-    spawn_delay: 1200 //spawn every minute (1200 ticks)
-    tick_interval: 200 //tick every 10 seconds (200 ticks)
-    max_tick_time: 1_000_000 //limit of 1 millisecond per tick (1,000,000 nanoseconds)
+    //spawn no more than 10 structures
+    limit: 10
+    //spawn structures every minute (1200 ticks)
+    spawn_delay: 1200
+    //tick every 10 seconds (200 ticks)
+    tick_interval: 200
+    //limit to 1 millisecond of processing per tick (1,000,000 nanoseconds)
+    max_tick_time: 1_000_000
 }
 ```
 </details>
@@ -180,9 +301,11 @@ The environment to provide. Accepted values are all environments [here](https://
 
 ```
 {
-    type: environment //namespace not required for built-in stuff
-    weight: 1 //common settings
-    environment: nether //provide all nether-type worlds
+    //namespace not required for built-in stuff
+    type: environment
+    weight: 1
+    //provide all nether-type worlds
+    environment: nether
 }
 ```
 </details>
@@ -209,13 +332,16 @@ If set, this will provide all worlds *except* those provided in `worlds`
 
 ```
 {
-    type: uuid //namespace not required for built-in stuff
-    weight: 1 //common settings
+    //namespace not required for built-in stuff
+    type: uuid
+    weight: 1
     worlds: [
-        "6943ac80-a52f-4a42-90ed-c9223bfa75f8" //a world UUID
-        "01234567-89ab-cdef-0123-456789abcdef" //another world UUID
+        //list of world UUIDs
+        6943ac80-a52f-4a42-90ed-c9223bfa75f8
+        01234567-89ab-cdef-0123-456789abcdef
     ]
-    blacklist: true //provide all worlds except these
+    //provide all worlds except these
+    blacklist: true
 }
 ```
 </details>
@@ -242,13 +368,16 @@ If set, this will provide all worlds *except* those provided in `worlds`
 
 ```
 {
-    type: name //namespace not required for built-in stuff
-    weight: 1 //common settings
+    //namespace not required for built-in stuff
+    type: name
+    weight: 1
     worlds: [
-        some_amazing_world //a world name
-        another_less_amazing_world //another world name
+        //list of world names
+        some_amazing_world
+        another_less_amazing_world
     ]
-    blacklist: false //provide only these worlds
+    //provide only these worlds
+    blacklist: false
 }
 ```
 </details>
@@ -296,8 +425,10 @@ The Z coordinate of the block
 
 ```
 {
-    type: block //namespace not required for built-in stuff
-    weight: 1 //common settings
+    //namespace not required for built-in stuff
+    type: block
+    weight: 1
+    //block coordinates
     x: 42
     y: 64
     z: 9001
@@ -346,15 +477,22 @@ The horizontal distribution to use. should be a namespaced id matching that of a
 
 ```
 {
-    type: square //namespace not required for built-in stuff
-    weight: 1 //common settings
-    x: 42 //center
-    z: 42 //center
-    radius: 500 //offer a 500 block radius (1001x1001) square
-    min_y: 64 // all locations above sea level
-    max_y: 1024 // no locations higher than 1024
-    vertical_distribution: even //use an even distribution for vertical distribution
-    horizontal_distribution: gaussian //use a gaussian distribution for horizontal distribution
+    //namespace not required for built-in stuff
+    type: square 
+    weight: 1
+    //center X/Z coordinates
+    x: 42
+    z: 42
+    //offer a 500 block radius (1001x1001) square
+    radius: 500
+    // all locations above sea level
+    min_y: 64
+    // no locations higher than 1024
+    max_y: 1024
+    //use an even distribution for vertical distribution
+    vertical_distribution: even
+    //use a gaussian distribution for horizontal distribution
+    horizontal_distribution: gaussian
 }
 ```
 </details>
@@ -402,15 +540,22 @@ The horizontal distribution to use. should be a namespaced id matching that of a
 
 ```
 {
-    type: circle //namespace not required for built-in stuff
-    weight: 1 //common settings
-    x: -64 //center
-    z: 9001 //center
-    radius: 400 //offer a 400 block radius circle
-    min_y: 0 // all locations above y=0
-    max_y: 255 // no locations higher than 255
-    vertical_distribution: gaussian //use a gaussian distribution for vertical distribution
-    horizontal_distribution: even //use an even distribution for horizontal distribution
+    //namespace not required for built-in stuff
+    type: circle 
+    weight: 1
+    //center XZ coordinates
+    x: -64
+    z: 9001
+    //offer a 400 block radius circle
+    radius: 400
+    // all locations above y=0
+    min_y: 0
+    // no locations higher than 255
+    max_y: 255
+    //use a gaussian distribution for vertical distribution
+    vertical_distribution: gaussian 
+    //use an even distribution for horizontal distribution
+    horizontal_distribution: even 
 }
 ```
 </details>
@@ -464,17 +609,23 @@ The distribution to use on the Z axis. should be a namespaced id matching that o
 
 ```
 {
-    type: cuboid //namespace not required for built-in stuff
-    weight: 1 //common settings
+    //namespace not required for built-in stuff
+    type: cuboid 
+    weight: 1
+    //min coordinates
     min_x: 64
-    max_x: 128
     min_y: 32
-    max_y: 512
     min_z: 2
+    //max coordinates
+    max_x: 128
+    max_y: 512
     max_z: 9999
-    x_distribution: gaussian //use a gaussian distribution for the X axis
-    y_distribution: even //use an even distribution for the Y axis
-    z_distribution: even //use an even distribution for the Z axis
+    //use a gaussian distribution for the X axis
+    x_distribution: gaussian
+    //use an even distribution for the Y axis
+    y_distribution: even
+    //use an even distribution for the Z axis
+    z_distribution: even
 }
 ```
 </details>
@@ -514,12 +665,16 @@ The distribution to use. should be a namespaced id matching that of a Distributi
 
 ```
 {
-    type: surface //namespace not required for built-in stuff
-    weight: 1 //common settings
+    //namespace not required for built-in stuff
+    type: surface
+    weight: 1
+    //Center XZ coordinates
     x: 96
     z: 1000000
+    //1000 block square radius (2001x2001)
     radius: 1000
-    distribution: gaussian //use a gaussian distribution
+    //use a gaussian distribution
+    distribution: gaussian
 }
 ```
 </details>
@@ -626,9 +781,11 @@ The path to the schematic file, from the ResourceSpawner folder (a value of `fol
 
 ```
 {
-    type: we_schematic //namespace not required for built-in stuff
+    //namespace not required for built-in stuff
+    type: we_schematic
     name: wow_so_cool
-    weight: 1 //common settings
+    weight: 1
+    //schematic file
     file: some/interesting/subfolder/cool_structure.schem
     conditions: [
         {
@@ -638,18 +795,24 @@ The path to the schematic file, from the ResourceSpawner folder (a value of `fol
             //another condition
         }
     ]
-    build_order: from_center //build from center, namespace not required for built-in stuff
-    replace: [//replace only air and cave air
+    //build from center, namespace not required for built-in stuff
+    build_order: from_center
+    replace: [
+        //replace only air and cave air
         air
         cave_air
     ]
     decay: {
-        decay_order: random //decay in random order, namespace not required for built-in stuff
-        delay: 72000 //decay after 1 hour
+        //decay in random order, namespace not required for built-in stuff
+        decay_order: random
+        //decay after 1 hour (72000 ticks)
+        delay: 72000
         reset_triggers: [
             {
-                //trigger stuff here
-                delay: 12000 //reset to 10 minutes
+                //trigger definition and settings go here
+
+                //reset to 10 minutes
+                delay: 12000 
                 conditions: [
                     {
                         //a condition
@@ -660,7 +823,8 @@ The path to the schematic file, from the ResourceSpawner folder (a value of `fol
                 ]
             }
         ]
-        decay_to: air //leave air behind when decaying
+        //leave air behind when decaying
+        decay_to: air
     }
 }
 ```
@@ -685,8 +849,10 @@ The entity type to spawn
 
 ```
 {
-    type: entity //namespace not required for built-in stuff
-    weight: 1 //common settings
+    //namespace not required for built-in stuff
+    type: entity
+    weight: 1
+    //spawn a sheep
     entity: minecraft:sheep
     conditions: [
         {
@@ -755,16 +921,23 @@ The maximum percentage of blocks that must be present (where 100.0 is 100%) If m
 
 ```
 {
-    type: cube_fill //namespace not required for built-in stuff
-    radius: 200 //check all blocks in a 401x401x401 cube
+    //namespace not required for built-in stuff
+    type: cube_fill
+    //check all blocks in a 401x401x401 cube
+    radius: 200
     blocks: [
-        air //only looking for air, nothing else
+        //only looking for air, nothing else
+        air
     ]
     //you probably don't need all four of these at once; they're just here for demonstration
-    min: 50 // must have at least 50 air blocks
-    max: 500 // must have no more than 500 air blocks
-    min_percent: 100 //must be all air
-    max_percent: 20 //must be no more than 20% air
+    // must have at least 50 air blocks
+    min: 50
+    // must have no more than 500 air blocks
+    max: 500
+    //must be all air
+    min_percent: 100
+    //must be no more than 20% air
+    max_percent: 20
 }
 ```
 </details>
@@ -800,13 +973,17 @@ If set to true, this will look for any region *except* those listed in `regions`
 
 ```
 {
-    type: cube_wg_region //namespace not required for built-in stuff
-    radius: 200 //check all blocks in a 401x401x401 cube
+    //namespace not required for built-in stuff
+    type: cube_wg_region
+    //check all blocks in a 401x401x401 cube
+    radius: 200
     regions: [
-        donotspawnstuffhere //the do not spawn stuff here region
-        spawn //the spawn region
+        //a list of region names
+        donotspawnstuffhere
+        spawn
     ]
-    invert: true //don't spawn stuff in the above regions
+    //don't spawn stuff in the above regions
+    invert: true
 }
 ```
 </details>
@@ -838,13 +1015,17 @@ If set to true, this will fail if any the listed entities are found
 
 ```
 {
-    type: entity_proximity //namespace not required for built-in stuff
-    radius: 200 //check for entities in a 200 block radius
+    //namespace not required for built-in stuff
+    type: entity_proximity
+    //check for entities in a 200 block radius
+    radius: 200
     entities: [
-        player //only spawn near players
-        item //or items too, I guess
+        //only spawn near players and items
+        player
+        item
     ]
-    invert: false //one of these entities must be nearby
+    //one of these entities must be nearby
+    invert: false
 }
 ```
 </details>
@@ -884,14 +1065,18 @@ Each entry must be a string, which can match a block name or block tag (ex. #min
 
 ```
 {
-    type: block//namespace not required for built-in stuff
+    //namespace not required for built-in stuff
+    type: block
+    //relative position
     x_offset: 0
-    y_offset: -1//check the block just below
+    y_offset: -1
     z_offset: 0
     blocks: [
-        lava//must not be lava
+        //a list of blocks to look for
+        lava
     ]
-    invert: true //must not be
+    //must not be lava
+    invert: true
 }
 ```
 </details>
@@ -919,11 +1104,14 @@ Each entry must be a string, matching the biome name
 
 ```
 {
-    type: block//namespace not required for built-in stuff
+    //namespace not required for built-in stuff
+    type: block
     biomes: [
-        plains//only spawns in plains
+        //a list of biomes to check for
+        plains
     ]
-    invert: false //only in plains
+    //only spawn in plains
+    invert: false
 }
 ```
 </details>
@@ -949,9 +1137,12 @@ The maximum time allowed
 
 ```
 {
-    type: world_time//namespace not required for built-in stuff
-    min: 6000 //must be after noon
-    max: 18000 //must be before midnight
+    //namespace not required for built-in stuff
+    type: world_time
+    //must be after noon
+    min: 6000
+    //must be before midnight
+    max: 18000
 }
 ```
 </details>
@@ -977,9 +1168,12 @@ The maximum phase allowed
 
 ```
 {
-    type: moon_phase//namespace not required for built-in stuff
-    min: 3 //must be at least a waning crescent
-    max: 5 //must be no later than a waxing crescent
+    //namespace not required for built-in stuff
+    type: moon_phase
+    //must be at least a waning crescent
+    min: 3
+    //must be no later than a waxing crescent
+    max: 5
 }
 ```
 </details>
@@ -1052,11 +1246,14 @@ Each entry must be a string, which can match a block name or block tag (ex. #min
 
 ```
 {
-    trigger: block_broken//namespace not required for built-in stuff
+    //namespace not required for built-in stuff
+    trigger: block_broken
     blocks: [
+        //A list of blocks or block tags
         stone
         iron_ore
         light_blue_glazed_terracotta
+        "#minecraft:fences"
     ]
 }
 ```
@@ -1079,9 +1276,12 @@ How often to trigger, in ticks
 
 ```
 {
-    trigger: timer//namespace not required for built-in stuff
-    interval: 20 //trigger every second
-    conditions: [//timer is meant to be used with conditions
+    //namespace not required for built-in stuff
+    trigger: timer
+    //trigger every second
+    interval: 20
+    //timer is designed to be used with conditions
+    conditions: [
         //a condition
     ]
 }

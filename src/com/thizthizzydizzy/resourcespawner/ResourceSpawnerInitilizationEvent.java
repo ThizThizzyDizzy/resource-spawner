@@ -4,6 +4,7 @@ import com.thizthizzydizzy.resourcespawner.distribution.Distribution;
 import com.thizthizzydizzy.resourcespawner.provider.LocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.SpawnProvider;
 import com.thizthizzydizzy.resourcespawner.provider.WorldProvider;
+import com.thizthizzydizzy.resourcespawner.scanner.Scanner;
 import com.thizthizzydizzy.resourcespawner.sorter.StructureSorter;
 import com.thizthizzydizzy.resourcespawner.trigger.Trigger;
 import org.bukkit.NamespacedKey;
@@ -94,5 +95,15 @@ public class ResourceSpawnerInitilizationEvent extends Event{
      */
     public boolean registerDistribution(NamespacedKey key, Distribution distribution) throws IllegalArgumentException{
         return plugin.registerDistribution(key, distribution);
+    }
+    /**
+     * Register a new scanner  (Equivelent to getPlugin()#registerScanner)
+     * @param key the scanner's unique key
+     * @param scanner the scanner to register
+     * @return true if the scanner is successfully registered, false otherwise
+     * @throws IllegalArgumentException if key is null
+     */
+    public boolean registerScanner(NamespacedKey key, Scanner scanner) throws IllegalArgumentException{
+        return plugin.registerScanner(key, scanner);
     }
 }

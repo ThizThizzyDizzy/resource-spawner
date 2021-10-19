@@ -3,6 +3,7 @@ import com.thizthizzydizzy.resourcespawner.condition.Condition;
 import com.thizthizzydizzy.resourcespawner.provider.LocationProvider;
 import com.thizthizzydizzy.resourcespawner.provider.SpawnProvider;
 import com.thizthizzydizzy.resourcespawner.provider.WorldProvider;
+import com.thizthizzydizzy.resourcespawner.trigger.TriggerHandler;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -10,7 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-public class ResourceSpawner{
+public class ResourceSpawner implements TriggerHandler{
     public final String name;
     public final HashMap<WorldProvider, Integer> worldProviders = new HashMap<>();
     public final HashMap<LocationProvider, Integer> locationProviders = new HashMap<>();
@@ -174,5 +175,9 @@ public class ResourceSpawner{
             }
         };
         tasks.add(spawnTask);
+    }
+    @Override
+    public void addTask(Task task){
+        tasks.add(task);
     }
 }

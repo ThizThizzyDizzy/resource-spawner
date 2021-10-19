@@ -14,9 +14,12 @@ import org.hjson.JsonValue;
 public class BlockBreakTrigger extends StructureTrigger implements Listener{
     private HashSet<Material> materials;
     private SpawnedStructure structure;
+    public BlockBreakTrigger(TriggerHandler handler){
+        super(handler);
+    }
     @Override
-    public Trigger newInstance(){
-        return new BlockBreakTrigger();
+    public Trigger newInstance(TriggerHandler handler){
+        return new BlockBreakTrigger(handler);
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
@@ -39,9 +42,9 @@ public class BlockBreakTrigger extends StructureTrigger implements Listener{
         trigger();
     }
     @Override
-    public StructureTrigger newInstance(ResourceSpawnerCore plugin, SpawnedStructure structure){
+    public StructureTrigger newInstance(ResourceSpawnerCore plugin, SpawnedStructure structure, TriggerHandler handler){
         if(ResourceSpawnerCore.debug)System.out.println("new BlockBreakTrigger structure instance created");
-        BlockBreakTrigger trigger = new BlockBreakTrigger();
+        BlockBreakTrigger trigger = new BlockBreakTrigger(handler);
         trigger.structure = structure;
         plugin.getServer().getPluginManager().registerEvents(trigger, plugin);
         trigger.materials = materials;
