@@ -23,6 +23,7 @@ public class EnvironmentWorldProvider implements WorldProvider{
     public World get(Random rand){
         ArrayList<World> worlds = new ArrayList<>();
         for(World world : Bukkit.getWorlds())if(world.getEnvironment()==environment)worlds.add(world);
+        if(worlds.isEmpty())return null;
         return worlds.get(rand.nextInt(worlds.size()));
     }
 }

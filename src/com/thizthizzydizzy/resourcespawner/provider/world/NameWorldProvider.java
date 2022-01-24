@@ -35,10 +35,12 @@ public class NameWorldProvider implements WorldProvider{
         ArrayList<World> chosenWorlds = new ArrayList<>();
         for(World world : Bukkit.getWorlds()){
             boolean has = worlds.contains(world.getName());
-            if(blacklist){
-                if(!has)chosenWorlds.add(world);
-            }else if(has)chosenWorlds.add(world);
+            boolean include = blacklist?!has:has;
+            if(ResourceSpawnerCore.debug)System.out.println((include?"Including":"Excluding")+" world "+world.getName()+" ("+world.getUID().toString()+")");
+            if(include)chosenWorlds.add(world);
         }
+        if(ResourceSpawnerCore.debug)System.out.println("Found "+chosenWorlds.size()+" World"+(chosenWorlds.size()==1?"":"s"));
+        if(chosenWorlds.isEmpty())return null;
         return chosenWorlds.get(rand.nextInt(chosenWorlds.size()));
     }
 }

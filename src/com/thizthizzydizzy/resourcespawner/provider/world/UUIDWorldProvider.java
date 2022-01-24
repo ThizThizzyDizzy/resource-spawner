@@ -34,13 +34,16 @@ public class UUIDWorldProvider implements WorldProvider{
     }
     @Override
     public World get(Random rand){
+        if(ResourceSpawnerCore.debug)System.out.println("UUIDWorldProvider Choosing");
         ArrayList<World> chosenWorlds = new ArrayList<>();
         for(World world : Bukkit.getWorlds()){
             boolean has = worlds.contains(world.getUID());
-            if(blacklist){
-                if(!has)chosenWorlds.add(world);
-            }else if(has)chosenWorlds.add(world);
+            boolean include = blacklist?!has:has;
+            if(ResourceSpawnerCore.debug)System.out.println((include?"Including":"Excluding")+" world "+world.getUID().toString()+" ("+world.getName()+")");
+            if(include)chosenWorlds.add(world);
         }
+        if(ResourceSpawnerCore.debug)System.out.println("Found "+chosenWorlds.size()+" World"+(chosenWorlds.size()==1?"":"s"));
+        if(chosenWorlds.isEmpty())return null;
         return chosenWorlds.get(rand.nextInt(chosenWorlds.size()));
     }
 }

@@ -4,7 +4,6 @@ import com.thizthizzydizzy.resourcespawner.Task;
 import com.thizthizzydizzy.resourcespawner.condition.Condition;
 import java.util.ArrayList;
 import java.util.Objects;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.hjson.JsonObject;
 public abstract class Trigger{
     public ArrayList<Condition> conditions = new ArrayList<>();

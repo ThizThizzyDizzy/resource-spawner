@@ -112,13 +112,21 @@ public class ResourceSpawner implements TriggerHandler{
             if(ResourceSpawnerCore.debug)System.out.println("No world providers");
             return;
         }
-        World world = chooseWeighted(worldProviders, rand).get(rand);
+        World world = getRandomWorld(rand);
+        if(world==null){
+            if(ResourceSpawnerCore.debug)System.out.println("No world provided");
+            return;
+        }
         if(ResourceSpawnerCore.debug)System.out.println("World: "+world.getName()+" ("+world.getUID()+")");
         if(locationProviders.isEmpty()){
             if(ResourceSpawnerCore.debug)System.out.println("No location providers");
             return;
         }
-        Location loc = chooseWeighted(locationProviders, rand).get(world, rand);
+        Location loc = getRandomLocation(world, rand);
+        if(loc==null){
+            if(ResourceSpawnerCore.debug)System.out.println("No location provided");
+            return;
+        }
         if(ResourceSpawnerCore.debug)System.out.println("Location: "+loc.toString());
         if(spawnProviders.isEmpty()){
             if(ResourceSpawnerCore.debug)System.out.println("No spawn providers");

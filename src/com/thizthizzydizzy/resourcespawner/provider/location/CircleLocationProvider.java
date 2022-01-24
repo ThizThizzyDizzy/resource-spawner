@@ -29,9 +29,9 @@ public class CircleLocationProvider implements LocationProvider{
         if(ResourceSpawnerCore.debug)System.out.println("z: "+originZ);
         radius = json.getInt("radius", 0);
         if(ResourceSpawnerCore.debug)System.out.println("radius: "+radius);
-        minY = json.getInt("min_y", Integer.MIN_VALUE);
+        minY = json.getInt("min_y", Short.MIN_VALUE);
         if(ResourceSpawnerCore.debug)System.out.println("min y: "+minY);
-        maxY = json.getInt("max_y", Integer.MAX_VALUE);
+        maxY = json.getInt("max_y", Short.MAX_VALUE);
         if(ResourceSpawnerCore.debug)System.out.println("max y: "+maxY);
         if(maxY<minY)throw new IllegalArgumentException("max_y must be greater than or equal to min_y!");
         verticalDistribution = plugin.getDistribution(json.getString("vertical_distribution", "even"));

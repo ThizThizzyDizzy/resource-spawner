@@ -27,9 +27,9 @@ public class CuboidLocationProvider implements LocationProvider{
         if(ResourceSpawnerCore.debug)System.out.println("min x: "+minX);
         maxX = json.get("max_x").asInt();
         if(ResourceSpawnerCore.debug)System.out.println("max x: "+maxX);
-        minY = json.getInt("min_y", Integer.MIN_VALUE);
+        minY = json.getInt("min_y", Short.MIN_VALUE);
         if(ResourceSpawnerCore.debug)System.out.println("min y: "+minY);
-        maxY = json.getInt("max_y", Integer.MAX_VALUE);
+        maxY = json.getInt("max_y", Short.MAX_VALUE);
         if(ResourceSpawnerCore.debug)System.out.println("max y: "+maxY);
         minZ = json.get("min_z").asInt();
         if(ResourceSpawnerCore.debug)System.out.println("min z: "+minZ);
