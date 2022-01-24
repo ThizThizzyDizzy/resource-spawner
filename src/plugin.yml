@@ -2,4 +2,8 @@ main: com.thizthizzydizzy.resourcespawner.ResourceSpawnerCore
 version: 1.1.0
 api-version: 1.16
 name: ResourceSpawner
+commands:
+    resourcespawner:
+        description: ResourceSpawner commands
+        usage: /resourcespawner help|debug [on|off]|scan
 softdepend: [WorldEdit, WorldGuard]

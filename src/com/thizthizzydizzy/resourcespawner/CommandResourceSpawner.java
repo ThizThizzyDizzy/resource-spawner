@@ -128,4 +128,3 @@ public class CommandResourceSpawner implements TabExecutor{
         else sender.sendMessage("Usage: "+usage);
     }
 }
-//resourcespawner (help|toggle [on|off]|on|off|reload|debug [on|off]|config)
