@@ -32,6 +32,7 @@ public class NameWorldProvider implements WorldProvider{
     }
     @Override
     public World get(Random rand){
+        if(ResourceSpawnerCore.debug)System.out.println("NameWorldProvider Choosing");
         ArrayList<World> chosenWorlds = new ArrayList<>();
         for(World world : Bukkit.getWorlds()){
             boolean has = worlds.contains(world.getName());
