@@ -62,7 +62,7 @@ public class ResourceSpawner implements TriggerHandler{
                     spawnTimer = spawnDelay;
                     if(spawnTask==null){
                         if(ResourceSpawnerCore.debug)System.out.println("No current spawn; "+structures.size()+"/"+limit);
-                        if(limit==1||structures.size()<limit)startSpawn(plugin);
+                        if(limit==-1||structures.size()<limit)startSpawn(plugin);
                     }
                 }
                 for(SpawnedStructure s : structures){
