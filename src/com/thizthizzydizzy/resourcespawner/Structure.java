@@ -11,6 +11,7 @@ public class Structure{
         if(ResourceSpawnerCore.debug)System.out.println("Normalizing structure");
         if(data.isEmpty())return;
         HashMap<Location, BlockData> copy = new HashMap<>(data);
+        data.clear();
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
         int minZ = Integer.MAX_VALUE;
