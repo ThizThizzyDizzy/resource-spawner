@@ -7,6 +7,7 @@ import com.thizthizzydizzy.resourcespawner.condition.CubeWorldGuardRegionConditi
 import com.thizthizzydizzy.resourcespawner.condition.EntityProximityCondition;
 import com.thizthizzydizzy.resourcespawner.condition.MoonPhaseCondition;
 import com.thizthizzydizzy.resourcespawner.condition.WorldTimeCondition;
+import com.thizthizzydizzy.resourcespawner.distribution.ConstrainedGaussianDistribution;
 import com.thizthizzydizzy.resourcespawner.distribution.Distribution;
 import com.thizthizzydizzy.resourcespawner.distribution.EvenDistribution;
 import com.thizthizzydizzy.resourcespawner.distribution.GaussianDistribution;
@@ -418,6 +419,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
         event.registerTrigger(new NamespacedKey(this, "timer"), new TimerTrigger(null));
         event.registerDistribution(new NamespacedKey(this, "even"), new EvenDistribution());
         event.registerDistribution(new NamespacedKey(this, "gaussian"), new GaussianDistribution());
+        event.registerDistribution(new NamespacedKey(this, "gaussian_constrained"), new ConstrainedGaussianDistribution());
         event.registerScanner(new NamespacedKey(this, "coordinate"), new CoordinateStructureScanner());
         event.registerScanner(new NamespacedKey(this, "direction"), new DirectionStructureScanner());
     }
