@@ -72,6 +72,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
     public final HashMap<NamespacedKey, Scanner> scanners = new HashMap<>();
     public final ArrayList<Scanner> activeScanners = new ArrayList<>();
     public static boolean debug = false;
+    public static boolean paused;
     /**
      * Register a new world provider
      * @param key the world provider's unique key
@@ -332,6 +333,7 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                                 if(debug)getLogger().log(Level.INFO, "Reading spawn provider {0}", type);
                                 SpawnProvider provider = getSpawnProvider(type);
                                 if(provider==null)throw new IllegalArgumentException("Unknown spawn provider: "+type);
+                                provider.resourceSpawner = resourceSpawner;
                                 provider.loadFromConfig(this, spawn);
                                 int weight = spawn.getInt("weight", 1);
                                 if(debug)getLogger().log(Level.INFO, "Weight: {0}", weight);
@@ -350,7 +352,6 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
                                         }else throw new IllegalArgumentException("Invalid condition: "+v.getType().getClass().getName());
                                     }
                                 }
-                                provider.resourceSpawner = resourceSpawner;
                                 resourceSpawner.spawnProviders.put(provider, weight);
                             }else throw new IllegalArgumentException("Invalid spawn provider: "+val.getType().getClass().getName());
                         }
@@ -390,7 +391,21 @@ public class ResourceSpawnerCore extends JavaPlugin implements Listener{
     public void onDisable(){
         PluginDescriptionFile pdfFile = getDescription();
         save();
-        if(debug)getLogger().log(Level.INFO, "Shutting down");
+        if(debug)getLogger().log(Level.INFO, "Shutting down...");
+        paused = true;
+        for(ResourceSpawner rs : resourceSpawners){
+            for(Task t : rs.tasks){
+                if(rs.workingTask!=null){
+                    while(!rs.workingTask.isFinished())rs.workingTask.step();
+                }
+                int stps = 0;
+                while(!t.isFinished()){
+                    t.step();
+                    stps++;
+                }
+                getLogger().log(Level.INFO, "Task {0}/{1} Finished ({2} steps)", new Object[]{rs.name, t.toString(), stps});
+            }
+        }
         getLogger().log(Level.INFO, "{0} has been disabled! (Version {1}) by ThizThizzyDizzy", new Object[]{pdfFile.getName(), pdfFile.getVersion()});
     }
     @EventHandler

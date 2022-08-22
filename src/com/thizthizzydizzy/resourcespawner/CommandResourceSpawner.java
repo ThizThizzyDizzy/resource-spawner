@@ -51,6 +51,157 @@ public class CommandResourceSpawner implements TabExecutor{
                 return true;
             }
         });
+        commands.add(new ResourceSpawnerCommand("pause"){
+            @Override
+            protected boolean run(CommandSender sender, Command command, String label, String[] args){
+                if(ResourceSpawnerCore.paused)sender.sendMessage("ResourceSpawner is already paused");
+                ResourceSpawnerCore.paused = true;
+                sender.sendMessage("Pausing Resource Spawners...");
+                return true;
+            }
+        });
+        commands.add(new ResourceSpawnerCommand("resume"){
+            @Override
+            protected boolean run(CommandSender sender, Command command, String label, String[] args){
+                if(!ResourceSpawnerCore.paused)sender.sendMessage("ResourceSpawner is already running");
+                ResourceSpawnerCore.paused = false;
+                sender.sendMessage("Resuming Resource Spawners...");
+                return true;
+            }
+        });
+        ResourceSpawnerCommand tasksList = new ResourceSpawnerCommand("list", "tasks.list") {
+            @Override
+            protected boolean run(CommandSender sender, Command command, String label, String[] args){
+                String str = "";
+                for(ResourceSpawner rs : plugin.resourceSpawners){
+                    str+=rs.name+" has "+rs.tasks.size()+" task"+(rs.tasks.size()==1?"":"s")+(rs.tasks.isEmpty()?"":":")+"\n";
+                    for(Task t : rs.tasks){
+                        str+=t.toString()+"\n";
+                    }
+                }
+                sender.sendMessage(str.trim());
+                return true;
+            }
+        };
+        ResourceSpawnerCommand tasksFinish = new ResourceSpawnerCommand("finish-all", "tasks.finish") {
+            @Override
+            protected boolean run(CommandSender sender, Command command, String label, String[] args){
+                int num = 0;
+                long steps = 0;
+                for(ResourceSpawner rs : plugin.resourceSpawners){
+                    for(Task t : rs.tasks){
+                        if(rs.workingTask!=null){
+                            while(!rs.workingTask.isFinished())rs.workingTask.step();
+                            num++;
+                        }
+                        int stps = 0;
+                        while(!t.isFinished()){
+                            t.step();
+                            stps++;
+                        }
+                        sender.sendMessage("Task "+rs.name+"/"+t.toString()+" Finished ("+stps+" steps)");
+                        steps+=stps;
+                    }
+                }
+                sender.sendMessage("Finished "+num+" tasks ("+steps+" steps)");
+                return true;
+            }
+        };
+        ResourceSpawnerCommand tasksCancel = new ResourceSpawnerCommand("cancel-all", "tasks.cancel") {
+            @Override
+            protected boolean run(CommandSender sender, Command command, String label, String[] args){
+                int num = 0;
+                for(ResourceSpawner rs : plugin.resourceSpawners){
+                    int n = 0;
+                    if(rs.workingTask!=null)n++;
+                    n+=rs.tasks.size();
+                    sender.sendMessage("Cancelling "+n+" Tasks for "+rs.name);
+                    rs.workingTask = null;
+                    rs.tasks.clear();
+                    num+=n;
+                }
+                sender.sendMessage("Cancelled "+num+" Tasks");
+                return true;
+            }
+        };
+        commands.add(new ResourceSpawnerCommand("tasks", tasksList, tasksFinish, tasksCancel) {
+            @Override
+            protected boolean run(CommandSender sender, Command command, String label, String[] args){
+                sender.sendMessage("Usage: /resourcespawner tasks (list|finish-all|cancel-all)");
+                return true;
+            }
+        });
+        ResourceSpawnerCommand structuresList = new ResourceSpawnerCommand("structures", "structures.list") {
+            @Override
+            protected boolean run(CommandSender sender, Command command, String label, String[] args){
+                String str = "";
+                for(ResourceSpawner rs : plugin.resourceSpawners){
+                    str+=rs.name+" has "+rs.structures.size()+" structure"+(rs.structures.size()==1?"":"s")+(rs.structures.isEmpty()?"":":")+"\n";
+                    for(SpawnedStructure s : rs.structures){
+                        Location loc = s.getLocation();
+                        str+=s.getName()+": located in "+s.getWorld().getName()+" at ("+loc.getBlockX()+", "+loc.getBlockY()+", "+loc.getBlockZ()+")\n";
+                    }
+                }
+                sender.sendMessage(str.trim());
+                return true;
+            }
+        };
+        ResourceSpawnerCommand structuresDecay = new ResourceSpawnerCommand("decay", "structures.decay") {
+            @Override
+            protected boolean run(CommandSender sender, Command command, String label, String[] args){
+                if(!(sender instanceof Player)){
+                    sender.sendMessage("You are not a player!");
+                    return true;
+                }
+                ResourceSpawner closestSpawner = null;
+                SpawnedStructure closest = null;
+                double dist = 0;
+                for(ResourceSpawner rs : plugin.resourceSpawners){
+                    for(SpawnedStructure s : rs.structures){
+                        Location loc = s.getLocation();
+                        double d = loc.distance(((Player)sender).getLocation());
+                        if(closest==null||d<dist){
+                            closestSpawner = rs;
+                            closest = s;
+                            d = dist;
+                        }
+                    }
+                }
+                if(closest==null)sender.sendMessage("No nodes found!");
+                if(closest.decayTask==null){
+                    closest.decayTask = closest.decay();
+                    closestSpawner.tasks.add(closest.decayTask);
+                    sender.sendMessage("Decay started for "+closestSpawner.name+"/"+closest.getName());
+                }
+                return true;
+            }
+        };
+        ResourceSpawnerCommand structuresDecayAll = new ResourceSpawnerCommand("decay-all", "structures.decay") {
+            @Override
+            protected boolean run(CommandSender sender, Command command, String label, String[] args){
+                int num = 0;
+                for(ResourceSpawner rs : plugin.resourceSpawners){
+                    for(SpawnedStructure s : rs.structures){
+                        Location loc = s.getLocation();
+                        if(s.decayTask==null){
+                            s.decayTask = s.decay();
+                            rs.tasks.add(s.decayTask);
+                            sender.sendMessage("Decay started for "+rs.name+"/"+s.getName());
+                            num++;
+                        }
+                    }
+                }
+                sender.sendMessage("Decay started for "+num+" structures");
+                return true;
+            }
+        };
+        commands.add(new ResourceSpawnerCommand("structures", structuresList, structuresDecay, structuresDecayAll) {
+            @Override
+            protected boolean run(CommandSender sender, Command command, String label, String[] args){
+                sender.sendMessage("Usage: /resourcespawner structures (list|decay|decay-all)");
+                return true;
+            }
+        });
         commands.add(new ResourceSpawnerCommand("scan") {
             @Override
             protected boolean run(CommandSender sender, Command command, String label, String[] args){

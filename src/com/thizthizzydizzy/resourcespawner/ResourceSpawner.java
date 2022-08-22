@@ -26,6 +26,7 @@ public class ResourceSpawner implements TriggerHandler{
     public ArrayList<SpawnedStructure> structures = new ArrayList<>();
     public Task spawnTask;//not actually used; just holds the task so it doesn't try spawning multiple things at once
     public BukkitTask taskProcessor;
+    public Task workingTask;
     private Random rand = new Random();
     public ResourceSpawner(String name){
         this.name = name;
@@ -62,7 +63,10 @@ public class ResourceSpawner implements TriggerHandler{
                     spawnTimer = spawnDelay;
                     if(spawnTask==null){
                         if(ResourceSpawnerCore.debug)System.out.println("No current spawn; "+structures.size()+"/"+limit);
-                        if(limit==-1||structures.size()<limit)startSpawn(plugin);
+                        if(limit==-1||structures.size()<limit){
+                            if(!ResourceSpawnerCore.paused)startSpawn(plugin);
+                            else if(ResourceSpawnerCore.debug)System.out.println("Spawning is paused!");
+                        }
                     }
                 }
                 for(SpawnedStructure s : structures){
@@ -75,28 +79,29 @@ public class ResourceSpawner implements TriggerHandler{
                     }
                 }
                 if(taskProcessor==null&&!tasks.isEmpty()){
-                    Task task = tasks.remove(0);
+                    workingTask = tasks.remove(0);
                     if(ResourceSpawnerCore.debug)System.out.println("Starting task processor");
                     taskProcessor = new BukkitRunnable() {
                         @Override
                         public void run(){
+                            if(workingTask==null)return;
                             if(ResourceSpawnerCore.debug)System.out.println("Task processor started");
                             long startTime = System.nanoTime();
-                            while(!task.isFinished()){
-                                task.step();
+                            while(!workingTask.isFinished()){
+                                workingTask.step();
                                 long totalNanos = System.nanoTime()-startTime;
                                 if(totalNanos>maxTickTime)return;
                             }
-                            Object o = task.getResult();
+                            Object o = workingTask.getResult();
                             if(o instanceof SpawnedStructure){
                                 SpawnedStructure s = (SpawnedStructure)o;
-                                if(task==spawnTask){
+                                if(workingTask==spawnTask){
                                     structures.add(s);
                                 }else{
                                     structures.remove(s);
                                 }
                             }
-                            if(task==spawnTask)spawnTask = null;
+                            if(workingTask==spawnTask)spawnTask = null;
                             taskProcessor = null;
                             if(ResourceSpawnerCore.debug)System.out.println("Task processor finished");
                             cancel();
