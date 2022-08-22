@@ -69,13 +69,15 @@ public class ResourceSpawner implements TriggerHandler{
                         }
                     }
                 }
-                for(SpawnedStructure s : structures){
-                    if(s.decayTimer==Integer.MIN_VALUE)continue;//doesn't decay
-                    if(s.decayTask!=null)continue;
-                    s.decayTimer-=tickInterval;
-                    if(s.decayTimer<=0){
-                        s.decayTask = s.decay();
-                        tasks.add(s.decayTask);
+                if(!ResourceSpawnerCore.paused){
+                    for(SpawnedStructure s : structures){
+                        if(s.decayTimer==Integer.MIN_VALUE)continue;//doesn't decay
+                        if(s.decayTask!=null)continue;
+                        s.decayTimer-=tickInterval;
+                        if(s.decayTimer<=0){
+                            s.decayTask = s.decay();
+                            tasks.add(s.decayTask);
+                        }
                     }
                 }
                 if(taskProcessor==null&&!tasks.isEmpty()){
