@@ -74,7 +74,9 @@ public class CommandResourceSpawner implements TabExecutor{
             protected boolean run(CommandSender sender, Command command, String label, String[] args){
                 String str = "";
                 for(ResourceSpawner rs : plugin.resourceSpawners){
-                    str+=rs.name+" has "+rs.tasks.size()+" task"+(rs.tasks.size()==1?"":"s")+(rs.tasks.isEmpty()?"":":")+"\n";
+                    int size = rs.tasks.size()+(rs.workingTask!=null?1:0);
+                    str+=rs.name+" has "+size+" task"+(size==1?"":"s")+(size==0?"":":")+"\n";
+                    if(rs.workingTask!=null)str+=rs.workingTask.toString()+"\n";
                     for(Task t : rs.tasks){
                         str+=t.toString()+"\n";
                     }
