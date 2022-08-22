@@ -133,7 +133,7 @@ public class CommandResourceSpawner implements TabExecutor{
                 return true;
             }
         });
-        ResourceSpawnerCommand structuresList = new ResourceSpawnerCommand("structures", "structures.list") {
+        ResourceSpawnerCommand structuresList = new ResourceSpawnerCommand("list", "structures.list") {
             @Override
             protected boolean run(CommandSender sender, Command command, String label, String[] args){
                 String str = "";
