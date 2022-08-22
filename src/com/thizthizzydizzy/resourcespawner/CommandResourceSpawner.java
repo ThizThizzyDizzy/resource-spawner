@@ -175,6 +175,8 @@ public class CommandResourceSpawner implements TabExecutor{
                     closest.decayTask = closest.decay();
                     closestSpawner.tasks.add(closest.decayTask);
                     sender.sendMessage("Decay started for "+closestSpawner.name+"/"+closest.getName());
+                }else{
+                    sender.sendMessage("Structure "+closestSpawner.name+"/"+closest.getName()+" is already decaying");
                 }
                 return true;
             }
