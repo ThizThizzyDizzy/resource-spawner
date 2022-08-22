@@ -161,6 +161,7 @@ public class CommandResourceSpawner implements TabExecutor{
                 for(ResourceSpawner rs : plugin.resourceSpawners){
                     for(SpawnedStructure s : rs.structures){
                         Location loc = s.getLocation();
+                        if(loc.getWorld()!=((Player)sender).getWorld())continue;
                         double d = loc.distance(((Player)sender).getLocation());
                         if(closest==null||d<dist){
                             closestSpawner = rs;
@@ -169,7 +170,7 @@ public class CommandResourceSpawner implements TabExecutor{
                         }
                     }
                 }
-                if(closest==null)sender.sendMessage("No nodes found!");
+                if(closest==null)sender.sendMessage("No structures found!");
                 if(closest.decayTask==null){
                     closest.decayTask = closest.decay();
                     closestSpawner.tasks.add(closest.decayTask);
