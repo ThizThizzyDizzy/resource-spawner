@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Random;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -34,6 +35,7 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
     public String name;
     private int rotation = 0;//0 1 2 3
     private boolean randomRotation = false;
+    private boolean preloadChunks = false;
     private final Random rand = new Random();
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
@@ -63,6 +65,7 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
                 throw new IllegalArgumentException("Rotation is invalid type! Expected number or string, found "+rotation.getType().toString());
             }
         }
+        preloadChunks = json.getBoolean("preload_chunks", false);
         JsonValue repl = json.get("replace");
         if(repl!=null){
             replace = new HashSet<>();
@@ -131,12 +134,26 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
         if(ResourceSpawnerCore.debug)System.out.println("Creating structure spawn task");
         int chosenRotation = randomRotation?rand.nextInt(4):rotation;
         Structure structure = getStructure(chosenRotation);
+        HashSet<Chunk> chunks = new HashSet<>();
+        ArrayList<Location> data = sorter==null?new ArrayList<>(structure.data.keySet()):sorter.sort(structure.data.keySet());
+        if(preloadChunks){
+            for(Location l : data){
+                chunks.add(l.getChunk());
+            }
+        }
         return new Task<SpawnedStructure>(){
             private SpawnedStructure spawnedStructure = new SpawnedStructure(AbstractStructureSpawnProvider.this, world, location, chosenRotation);
-            private ArrayList<Location> data = sorter==null?new ArrayList<>(structure.data.keySet()):sorter.sort(structure.data.keySet());
             private boolean finished = false;
+            private boolean chunksLoaded = false;
             @Override
             public void step(){
+                if(!chunksLoaded){
+                    for(Chunk c : chunks){
+                        c.addPluginChunkTicket(plugin);
+                    }
+                    chunksLoaded = true;
+                    return;
+                }
                 if(!data.isEmpty()){
                     Location pos = data.remove(0);
                     Block block = world.getBlockAt(location.getBlockX()+pos.getBlockX(), location.getBlockY()+pos.getBlockY(), location.getBlockZ()+pos.getBlockZ());
@@ -146,6 +163,9 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
                     block.setBlockData(blockData, false);
                     spawnedStructure.blocks.add(block);
                     return;
+                }
+                for(Chunk c : chunks){
+                    c.removePluginChunkTicket(plugin);
                 }
                 if(ResourceSpawnerCore.debug)System.out.println("Finished spawning structure, setting triggers");
                 spawnedStructure.decayTimer = decayDelay;
