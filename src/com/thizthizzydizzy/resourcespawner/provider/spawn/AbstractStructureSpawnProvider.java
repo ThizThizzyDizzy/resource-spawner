@@ -138,7 +138,7 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
         ArrayList<Location> data = sorter==null?new ArrayList<>(structure.data.keySet()):sorter.sort(structure.data.keySet());
         if(preloadChunks){
             for(Location l : data){
-                chunks.add(l.getChunk());
+                chunks.add(world.getChunkAt(l));
             }
         }
         return new Task<SpawnedStructure>(){
