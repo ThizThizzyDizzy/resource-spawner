@@ -4,6 +4,7 @@ import com.thizthizzydizzy.resourcespawner.Task;
 import com.thizthizzydizzy.resourcespawner.Vanillify;
 import java.util.HashSet;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -15,12 +16,15 @@ public class CubeFillCondition implements Condition{
     private HashSet<Material> blocks = new HashSet<>();
     private Double minPercent, maxPercent;
     private Integer min, max;
+    private boolean preloadChunks = false;
+    private ResourceSpawnerCore plugin;
     @Override
     public Condition newInstance(){
         return new CubeFillCondition();
     }
     @Override
     public void loadFromConfig(ResourceSpawnerCore plugin, JsonObject json){
+        this.plugin = plugin;
         if(ResourceSpawnerCore.debug)System.out.println("Loading "+getClass().getName());
         radius = json.getInt("radius", 0);//default only checks one block
         if(ResourceSpawnerCore.debug)System.out.println("radius: "+radius);
@@ -46,6 +50,7 @@ public class CubeFillCondition implements Condition{
         JsonValue maxPercentValue = json.get("max_percent");
         if(maxPercentValue!=null)maxPercent = maxPercentValue.asDouble()/100;
         if(ResourceSpawnerCore.debug)System.out.println("max percent: "+maxPercent);
+        preloadChunks = json.getBoolean("preload_chunks", false);
     }
     @Override
     public Task<Boolean> check(World world, Location location){
@@ -62,12 +67,32 @@ public class CubeFillCondition implements Condition{
         int maxY = Math.min(world.getMaxHeight(), location.getBlockY()+radius);
         int maxZ = location.getBlockZ()+radius;
         int volume = (maxX-minX+1)*(maxY-minY+1)*(maxZ-minZ+1);
+        HashSet<Chunk> chunks = new HashSet<>();
+        if(preloadChunks){
+            for(int x = minX; x<=maxX; x++){
+                for(int z = minZ; z<=maxZ; z++){
+                    chunks.add(world.getChunkAt(new Location(world, x, (maxY+minY)/2, z)));
+                }
+            }
+        }
         return new Task<Boolean>() {
+            @Override
+            public String getName(){
+                return "cube-fill-condition:"+world.getName()+"|"+location.getX()+" "+location.getY()+" "+location.getZ()+"|"+getClass().getName();
+            }
             private int x = minX-1, y = minY, z = minZ;
             private Boolean result = null;
             int numFound = 0;
+            private boolean chunksLoaded = false;
             @Override
             public void step(){
+                if(!chunksLoaded){
+                    for(Chunk c : chunks){
+                        c.addPluginChunkTicket(plugin);
+                    }
+                    chunksLoaded = true;
+                    return;
+                }
                 x++;
                 if(x>maxX){
                     x = minX;
@@ -76,6 +101,9 @@ public class CubeFillCondition implements Condition{
                         y = minY;
                         z++;
                         if(z>maxZ){
+                            for(Chunk c : chunks){
+                                c.removePluginChunkTicket(plugin);
+                            }
                             result = true;
                             double percent = numFound/(double)volume;
                             if(min!=null&&numFound<min){
@@ -94,10 +122,16 @@ public class CubeFillCondition implements Condition{
                 if(blocks.contains(world.getBlockAt(x, y, z).getType()))numFound++;
                 double percent = numFound/(double)volume;
                 if(max!=null&&numFound>max){
+                    for(Chunk c : chunks){
+                        c.removePluginChunkTicket(plugin);
+                    }
                     result = false;
                     if(ResourceSpawnerCore.debug)System.out.println("CubeFill fail: "+numFound+"/"+volume+" ("+percent+")");
                 }
                 if(maxPercent!=null&&percent>maxPercent){
+                    for(Chunk c : chunks){
+                        c.removePluginChunkTicket(plugin);
+                    }
                     result = false;
                     if(ResourceSpawnerCore.debug)System.out.println("CubeFill fail: "+numFound+"/"+volume+" ("+percent+")");
                 }
@@ -105,6 +139,9 @@ public class CubeFillCondition implements Condition{
                     boolean metMin = min==null||numFound>=min;
                     boolean metMinPercent = minPercent==null||percent>=minPercent;
                     if(metMin&&metMinPercent){
+                        for(Chunk c : chunks){
+                            c.removePluginChunkTicket(plugin);
+                        }
                         result = true;//met minimum, no maximum
                         if(ResourceSpawnerCore.debug)System.out.println("CubeFill pass: "+numFound+"/"+volume+" ("+percent+")");
                     }

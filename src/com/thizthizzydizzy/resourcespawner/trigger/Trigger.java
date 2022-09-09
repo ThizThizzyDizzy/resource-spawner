@@ -24,6 +24,10 @@ public abstract class Trigger{
             handler.addTask(new Task(){
                 boolean finished = false;
                 @Override
+                public String getName(){
+                    return "trigger:"+getClass().getName();
+                }
+                @Override
                 public void step(){
                     if(!subtasks.isEmpty()){
                         Task<Boolean> subtask = subtasks.get(0);

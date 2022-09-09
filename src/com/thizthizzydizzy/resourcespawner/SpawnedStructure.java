@@ -40,6 +40,10 @@ public class SpawnedStructure{
         ArrayList<Location> decayOrder = spawnProvider.decaySorter==null?new ArrayList<>(data.keySet()):spawnProvider.decaySorter.sort(data.keySet());
         if(ResourceSpawnerCore.debug)System.out.println("Creating decay task");
         return new Task<SpawnedStructure>() {
+            @Override
+            public String getName(){
+                return "decay:"+world.getName()+"|"+pos.getX()+" "+pos.getY()+" "+pos.getZ()+"|"+spawnProvider.name+"|"+spawnProvider.getClass().getName();
+            }
             private boolean finished = false;
             @Override
             public void step(){

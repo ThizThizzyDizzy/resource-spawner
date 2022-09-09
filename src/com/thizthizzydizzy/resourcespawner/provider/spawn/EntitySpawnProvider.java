@@ -23,6 +23,10 @@ public class EntitySpawnProvider extends SpawnProvider{
     public Task<Entity> spawn(ResourceSpawnerCore plugin, World world, Location location){
         if(ResourceSpawnerCore.debug)System.out.println("Creating entity spawn task");
         return new Task<Entity>() {
+            @Override
+            public String getName(){
+                return "entity-spawn:"+world.getName()+"|"+location.getX()+" "+location.getY()+" "+location.getZ()+"|"+getClass().getName();
+            }
             private Entity result;
             @Override
             public void step(){

@@ -142,6 +142,10 @@ public abstract class AbstractStructureSpawnProvider extends SpawnProvider{
             }
         }
         return new Task<SpawnedStructure>(){
+            @Override
+            public String getName(){
+                return "structure-spawn:"+world.getName()+"|"+location.getX()+" "+location.getY()+" "+location.getZ()+"|"+getClass().getName();
+            }
             private SpawnedStructure spawnedStructure = new SpawnedStructure(AbstractStructureSpawnProvider.this, world, location, chosenRotation);
             private boolean finished = false;
             private boolean chunksLoaded = false;

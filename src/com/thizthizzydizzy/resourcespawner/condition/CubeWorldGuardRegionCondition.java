@@ -52,6 +52,10 @@ public class CubeWorldGuardRegionCondition implements Condition{
         int maxY = Math.min(world.getMaxHeight(), location.getBlockY()+radius);
         int maxZ = location.getBlockZ()+radius;
         return new Task<Boolean>() {
+            @Override
+            public String getName(){
+                return "cube-wg-condition:"+world.getName()+"|"+location.getX()+" "+location.getY()+" "+location.getZ()+"|"+getClass().getName();
+            }
             private int x = minX-1, y = minY, z = minZ;
             private Boolean result = null;
             @Override

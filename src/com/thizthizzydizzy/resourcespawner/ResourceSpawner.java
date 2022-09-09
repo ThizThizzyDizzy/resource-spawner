@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 public class ResourceSpawner implements TriggerHandler{
@@ -28,6 +29,7 @@ public class ResourceSpawner implements TriggerHandler{
     public BukkitTask taskProcessor;
     public Task workingTask;
     private Random rand = new Random();
+    public CommandSender taskMonitor;
     public ResourceSpawner(String name){
         this.name = name;
     }
@@ -83,16 +85,30 @@ public class ResourceSpawner implements TriggerHandler{
                 if(taskProcessor==null&&!tasks.isEmpty()){
                     workingTask = tasks.remove(0);
                     if(ResourceSpawnerCore.debug)System.out.println("Starting task processor");
+                    if(taskMonitor!=null)taskMonitor.sendMessage(name+" Starting Task Processor: "+tasks.size()+" pending tasks");
                     taskProcessor = new BukkitRunnable() {
                         @Override
                         public void run(){
-                            if(workingTask==null)return;
+                            if(workingTask==null){
+                                if(taskMonitor!=null)taskMonitor.sendMessage(name+" Working task is null; Task processor ending");
+                                if(ResourceSpawnerCore.debug)System.out.println("Task processor ended");
+                                taskProcessor = null;
+                                cancel();
+                                return;
+                            }
                             if(ResourceSpawnerCore.debug)System.out.println("Task processor started");
                             long startTime = System.nanoTime();
+                            long steps = 0;
                             while(!workingTask.isFinished()){
+                                steps++;
                                 workingTask.step();
                                 long totalNanos = System.nanoTime()-startTime;
-                                if(totalNanos>maxTickTime)return;
+                                if(totalNanos>maxTickTime){
+                                    if(totalNanos>maxTickTime*2){
+                                        if(taskMonitor!=null)taskMonitor.sendMessage(name+" Task "+workingTask.getName()+" took too long! did "+steps+" steps in "+totalNanos+" nanos ("+totalNanos/maxTickTime+"x)");
+                                    }
+                                    return;
+                                }
                             }
                             Object o = workingTask.getResult();
                             if(o instanceof SpawnedStructure){
@@ -104,7 +120,13 @@ public class ResourceSpawner implements TriggerHandler{
                                 }
                             }
                             if(workingTask==spawnTask)spawnTask = null;
+                            if(!tasks.isEmpty()){
+                                workingTask = tasks.remove(0);
+                                return;
+                            }
+                            if(taskMonitor!=null)taskMonitor.sendMessage(name+" Task "+workingTask.getName()+" Finished");
                             taskProcessor = null;
+                            if(taskMonitor!=null)taskMonitor.sendMessage(name+" Task Processor Finished");
                             if(ResourceSpawnerCore.debug)System.out.println("Task processor finished");
                             cancel();
                         }
@@ -149,6 +171,13 @@ public class ResourceSpawner implements TriggerHandler{
             Object result = null;
             private Task spawnTask = null;
             @Override
+            public String getName(){
+                String nam = "spawn:"+world.getName()+"|"+loc.getX()+" "+loc.getY()+" "+loc.getZ()+"|"+spawnProvider.getClass().getName();
+                if(spawnTask!=null)return nam+"/"+spawnTask.getName();
+                if(conditionTask!=null)return nam+"/"+conditionTask.getName();
+                return nam;
+            }
+            @Override
             public void step(){
                 if(conditionTask!=null){
                     if(!conditionTask.isFinished()){
@@ -158,6 +187,7 @@ public class ResourceSpawner implements TriggerHandler{
                         if(!conditionTask.getResult()){
                             failed = true;
                             if(ResourceSpawnerCore.debug)System.out.println("Condition Failed");
+                            if(taskMonitor!=null)taskMonitor.sendMessage(name+"/"+getName()+" Condition failed!");
                             return;
                         }
                         if(ResourceSpawnerCore.debug)System.out.println("Condition passed");
@@ -172,6 +202,7 @@ public class ResourceSpawner implements TriggerHandler{
                 //All conditions have been met; begin spawning
                 if(spawnTask==null){
                     if(ResourceSpawnerCore.debug)System.out.println("Spawn conditions passed; spawning...");
+                    if(taskMonitor!=null)taskMonitor.sendMessage(name+"/"+getName()+" Conditions passed!");
                     spawnTask = spawnProvider.spawn(plugin, world, loc);
                 }
                 spawnTask.step();

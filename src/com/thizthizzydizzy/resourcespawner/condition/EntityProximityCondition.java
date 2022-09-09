@@ -45,6 +45,10 @@ public class EntityProximityCondition implements Condition{
         }
         ArrayList<Entity> importantEntities = new ArrayList<>();
         return new Task<Boolean>() {
+            @Override
+            public String getName(){
+                return "proximity-condition:"+world.getName()+"|"+location.getX()+" "+location.getY()+" "+location.getZ()+"|"+getClass().getName();
+            }
             Boolean result = null;
             @Override
             public void step(){

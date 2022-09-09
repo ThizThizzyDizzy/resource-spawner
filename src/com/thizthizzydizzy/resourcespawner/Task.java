@@ -1,5 +1,6 @@
 package com.thizthizzydizzy.resourcespawner;
 public interface Task<T>{
+    public String getName();
     /**
      * Run one step of the task. Steps should be as small as possible to allow smooth operation.
      */

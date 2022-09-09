@@ -76,12 +76,28 @@ public class CommandResourceSpawner implements TabExecutor{
                 for(ResourceSpawner rs : plugin.resourceSpawners){
                     int size = rs.tasks.size()+(rs.workingTask!=null?1:0);
                     str+=rs.name+" has "+size+" task"+(size==1?"":"s")+(size==0?"":":")+"\n";
-                    if(rs.workingTask!=null)str+=rs.workingTask.toString()+"\n";
+                    if(rs.workingTask!=null)str+=rs.workingTask.getName()+"\n";
                     for(Task t : rs.tasks){
-                        str+=t.toString()+"\n";
+                        str+=t.getName()+"\n";
                     }
                 }
                 sender.sendMessage(str.trim());
+                return true;
+            }
+        };
+        ResourceSpawnerCommand tasksMonitor = new ResourceSpawnerCommand("monitor", "tasks.monitor") {
+            @Override
+            protected boolean run(CommandSender sender, Command command, String label, String[] args){
+                String str = "";
+                for(ResourceSpawner rs : plugin.resourceSpawners){
+                    if(rs.taskMonitor==sender){
+                        rs.taskMonitor = null;
+                        sender.sendMessage("Stopped monitoring tasks for "+rs.name);
+                    }else{
+                        rs.taskMonitor = sender;
+                        sender.sendMessage("Started monitoring tasks for "+rs.name);
+                    }
+                }
                 return true;
             }
         };
@@ -91,17 +107,23 @@ public class CommandResourceSpawner implements TabExecutor{
                 int num = 0;
                 long steps = 0;
                 for(ResourceSpawner rs : plugin.resourceSpawners){
-                    for(Task t : rs.tasks){
-                        if(rs.workingTask!=null){
-                            while(!rs.workingTask.isFinished())rs.workingTask.step();
-                            num++;
+                    if(rs.workingTask!=null){
+                        int stps = 0;
+                        while(!rs.workingTask.isFinished()){
+                            rs.workingTask.step();
+                            stps++;
                         }
+                        num++;
+                        steps+=stps;
+                        sender.sendMessage("Working Task "+rs.name+"/"+rs.workingTask.getName()+" Finished ("+stps+" steps)");
+                    }
+                    for(Task t : rs.tasks){
                         int stps = 0;
                         while(!t.isFinished()){
                             t.step();
                             stps++;
                         }
-                        sender.sendMessage("Task "+rs.name+"/"+t.toString()+" Finished ("+stps+" steps)");
+                        sender.sendMessage("Task "+rs.name+"/"+t.getName()+" Finished ("+stps+" steps)");
                         steps+=stps;
                     }
                 }
@@ -126,7 +148,7 @@ public class CommandResourceSpawner implements TabExecutor{
                 return true;
             }
         };
-        commands.add(new ResourceSpawnerCommand("tasks", tasksList, tasksFinish, tasksCancel) {
+        commands.add(new ResourceSpawnerCommand("tasks", tasksList, tasksFinish, tasksCancel, tasksMonitor) {
             @Override
             protected boolean run(CommandSender sender, Command command, String label, String[] args){
                 sender.sendMessage("Usage: /resourcespawner tasks (list|finish-all|cancel-all)");

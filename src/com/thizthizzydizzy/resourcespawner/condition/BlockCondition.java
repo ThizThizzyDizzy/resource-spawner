@@ -44,6 +44,10 @@ public class BlockCondition implements Condition{
     public Task<Boolean> check(World world, Location location){
         if(ResourceSpawnerCore.debug)System.out.println("Creating check task for "+getClass().getName());
         return new Task<Boolean>() {
+            @Override
+            public String getName(){
+                return "block-condition:"+world.getName()+"|"+location.getX()+" "+location.getY()+" "+location.getZ()+"|"+getClass().getName();
+            }
             Boolean result = null;
             @Override
             public void step(){
