@@ -11,7 +11,7 @@ import org.bukkit.World;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 public class CubeFillCondition implements Condition{
-    private static final String serverVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3].substring(1);
+    private static final String serverVersion = Bukkit.getBukkitVersion();
     private int radius;
     private HashSet<Material> blocks = new HashSet<>();
     private Double minPercent, maxPercent;
@@ -57,7 +57,7 @@ public class CubeFillCondition implements Condition{
         if(ResourceSpawnerCore.debug)System.out.println("Creating check task for "+getClass().getName());
         int minX = location.getBlockX()-radius;
         int minY;
-        if(serverVersion.contains("1_16")){
+        if(serverVersion.startsWith("1.16")){
             minY = Math.max(0, location.getBlockY()-radius);
         }else{
             minY = Math.max(world.getMinHeight(), location.getBlockY()-radius);
